@@ -10,3 +10,7 @@
 	path = scl_sandhi_interface
 	url = https://github.com/SriramKrishnan8/scl_sandhi_interface.git
 	branch = main
+[submodule "dcs_morph_analysis"]
+	path = dcs_morph_analysis
+	url = https://github.com/SriramKrishnan8/dcs_morph_analysis.git
+	branch = main
