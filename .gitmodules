@@ -6,3 +6,7 @@
 	path = scl_morph_interface
 	url = https://github.com/SriramKrishnan8/scl_morph_interface.git
 	branch = main
+[submodule "scl_sandhi_interface"]
+	path = scl_sandhi_interface
+	url = https://github.com/SriramKrishnan8/scl_sandhi_interface.git
+	branch = main
