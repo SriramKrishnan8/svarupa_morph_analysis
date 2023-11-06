@@ -7,7 +7,7 @@ import json
 
 from tqdm import tqdm
 
-script, sh_res, scl_res, dcs_res, final_res = sys.argv
+script, sh_res, scl_res, dcs_rv_res, dcs_av_res, final_res = sys.argv
 
 
 def get_contents(f_name):
@@ -26,7 +26,8 @@ def get_contents(f_name):
 
 sh_dict_lst = get_contents(sh_res)
 scl_dict_lst = get_contents(scl_res)
-#dcs_dict_lst = get_contents(dcs_res)
+dcs_rv_dict_lst = get_contents(dcs_rv_res)
+dcs_av_dict_lst = get_contents(dcs_av_res)
 
 final_dict_lst = []
 
@@ -34,14 +35,17 @@ print("Generating Results...")
 for i in tqdm(range(len(sh_dict_lst))):
     sh_item = sh_dict_lst[i]
     scl_item = scl_dict_lst[i]
-#    dcs_item = dcs_dict_lst[i]
+    dcs_rv_item = dcs_rv_dict_lst[i]
+    dcs_av_item = dcs_av_dict_lst[i]
     
     if sh_item.get("status", "") == "success":
         final_dict_lst.append(sh_item)
     elif scl_item.get("status", "") == "success":
         final_dict_lst.append(scl_item)
-#    elif dcs_item.get("status", "") == "success":
-#        final_dict_lst.append(dcs_item)
+    elif dcs_rv_item.get("status", "") == "success":
+        final_dict_lst.append(dcs_rv_item)
+    elif dcs_av_item.get("status", "") == "success":
+        final_dict_lst.append(dcs_av_item)
     else:
         final_dict_lst.append(sh_item)
     

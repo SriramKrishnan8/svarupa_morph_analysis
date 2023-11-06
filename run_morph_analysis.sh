@@ -23,12 +23,16 @@ cd ../scl_morph_interface/
 python3 samsaadhanii_morph_analysis.py DN deva -i ../tmp_input.tsv -o ../tmp_res_scl.tsv
 
 # Run DCS
-#cd ../dcs_morph_analysis/
-#python3 
+echo "Extracting DCS Analysis (Rigveda)..."
+cd ../dcs_morph_analysis/
+python3 get_dcs_sh_morph.py rv_analysis_map.tsv ../tmp_input.tsv ../tmp_res_dcs_rv.tsv
+echo "Extracting DCS Analysis (Atharvaveda)..."
+cd ../dcs_morph_analysis/
+python3 get_dcs_sh_morph.py av_analysis_map.tsv ../tmp_input.tsv ../tmp_res_dcs_av.tsv
 
 # Generate final results
 cd ..
-python3 generate_results.py tmp_res_sh.tsv tmp_res_scl.tsv tmp_res_dcs.tsv tmp_final_res.tsv
+python3 generate_results.py tmp_res_sh.tsv tmp_res_scl.tsv tmp_res_dcs_rv.tsv tmp_res_dcs_av.tsv tmp_final_res.tsv
 
 # Generate Output
 num_columns=$(awk -F'\t' '{print NF; exit}' $INPUT_FILE)
