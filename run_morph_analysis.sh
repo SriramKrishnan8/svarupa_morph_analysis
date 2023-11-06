@@ -5,7 +5,7 @@ INPUT_FILE=$1
 OUTPUT_FILE=$2
 
 # Extract Input
-cut -f 1 $INPUT_FILE > tmp_input.tsv
+python3 preprocess.py $INPUT_FILE tmp_input.tsv
 
 # Clean Input
 # Generate three sets of input: cleaned, sandhied, split
@@ -16,35 +16,24 @@ cut -f 1 $INPUT_FILE > tmp_input.tsv
 echo "Extracting Sanskrit Heritage Analysis..."
 cd vedic_morph_analyser_sh/
 python3 pada_vishleshika.py DN deva best -i ../tmp_input.tsv -o ../tmp_res_sh.tsv
+cd ..
 
 # Run SCL
 echo "Extracting Samsaadhanii Analysis..."
-cd ../scl_morph_interface/
+cd scl_morph_interface/
 python3 samsaadhanii_morph_analysis.py DN deva -i ../tmp_input.tsv -o ../tmp_res_scl.tsv
+cd ..
 
 # Run DCS
 echo "Extracting DCS Analysis (Rigveda)..."
-cd ../dcs_morph_analysis/
+cd dcs_morph_analysis/
 python3 get_dcs_sh_morph.py rv_analysis_map.tsv ../tmp_input.tsv ../tmp_res_dcs_rv.tsv
 echo "Extracting DCS Analysis (Atharvaveda)..."
-cd ../dcs_morph_analysis/
 python3 get_dcs_sh_morph.py av_analysis_map.tsv ../tmp_input.tsv ../tmp_res_dcs_av.tsv
+cd ..
 
 # Generate final results
-cd ..
-python3 generate_results.py tmp_res_sh.tsv tmp_res_scl.tsv tmp_res_dcs_rv.tsv tmp_res_dcs_av.tsv tmp_final_res.tsv
-
-# Generate Output
-num_columns=$(awk -F'\t' '{print NF; exit}' $INPUT_FILE)
-if [ "$num_columns" -gt 1 ]; then
-    # If there are more than one column 
-    cut -f 2-"$num_columns" "$1" > tmp_details.tsv
-    paste tmp_input.tsv tmp_details.tsv tmp_final_res.tsv > $OUTPUT_FILE
-else
-    # If there's only one column
-    cut -f 1 "$1" > tmp_input.tsv
-    paste tmp_input.tsv tmp_final_res.tsv > $OUTPUT_FILE
-fi
+python3 generate_results.py $INPUT_FILE tmp_res_sh.tsv tmp_res_scl.tsv tmp_res_dcs_rv.tsv tmp_res_dcs_av.tsv tmp_final_res.tsv $OUTPUT_FILE
 
 rm tmp*
 

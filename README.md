@@ -21,10 +21,10 @@ The following are the constituents:
 The pre-requisites of Sanskrit Heritage Platform Interface are available here: [Sanskrit Heritage Platform Interface](https://github.com/SriramKrishnan8/vedic_morph_analyser_sh.git).
 The pre-requisites of Samsaadhanii Morphological Analysis are available here: [Samsaadhanii Morph Analysis Interface](https://github.com/SriramKrishnan8/scl_morph_interface.git).
 
-In addition to these, tqdm is used in this setup for tracking progress:
+In addition to these, pandas and tqdm are used in this setup for tracking progress:
 
 ```
-pip3 install tqdm
+pip3 install pandas tqdm
 ```
 
 ## Installation
