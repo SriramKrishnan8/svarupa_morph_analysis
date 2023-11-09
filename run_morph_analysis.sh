@@ -12,6 +12,9 @@ python3 preprocess.py $INPUT_FILE tmp_input.tsv
 # to be used successively until the word is recognized
 # temporarily using the same input file for analyses
 
+# python3 process_special_chars.py tmp_input_orig.tsv tmp_input_modified.tsv
+# cut -d$'\t' -f1 tmp_input_modified.tsv > tmp_input.tsv
+
 # Run SH
 echo "Extracting Sanskrit Heritage Analysis..."
 cd vedic_morph_analyser_sh/
