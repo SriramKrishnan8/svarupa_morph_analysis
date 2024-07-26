@@ -5,28 +5,9 @@ import json
 
 from tqdm import tqdm
 
-import shToTJN as s2t
+import sh_to_term_json_run as shtotj
 
 script, inp, out, out2, text_type = sys.argv
-
-def call_sh_to_term(input_, json_str):
-    """ """
-
-    term_json_obj = []
-    if "final_json" in json_str:
-        status = "skip"
-    elif ("unrecognized" in json_str and text_type == "word") or "error" in json_str:
-        status = "unrecognized"
-        term_json_obj = [
-            {"name": input_, "morphList": [], "selected": "false", "source" : ""}
-        ]
-    else:
-        status = "success"
-        term_json_str, segmentation = s2t.shToTerm(json_str)
-        term_json_obj = json.loads(term_json_str)
-    
-    return term_json_obj, status
-
 
 inp_f = open(inp, "r", encoding="utf-8")
 inp_contents = inp_f.read()
@@ -44,7 +25,7 @@ for i in tqdm(range(len(inp_list))):
     input_ = item[0]
     json_str = item[-1]
     
-    term_json_obj, status = call_sh_to_term(input_, json_str)
+    term_json_obj, status = shtotj.call_sh_to_term(input_, json_str)
     
     if status == "skip":
         continue

@@ -5,11 +5,12 @@ import json
 
 from tqdm import tqdm
 
-import shToTJN as s2t
+try:
+    from sh_to_term_json import shToTJN as s2t
+except Exception as e:
+    import shToTJN as s2t
 
-script, inp, res, out, out2, text_type = sys.argv
-
-def call_sh_to_term(input_, json_str):
+def call_sh_to_term(input_, json_str, text_type):
     """ """
 
     term_json_obj = []
@@ -40,7 +41,7 @@ def get_morphs(morph_list, segment):
     return morphs
     
 
-def generate_results(input_id, input_sent, json_str):
+def generate_results(input_id, input_sent, json_str, text_type):
     """ """
     
     sh_json = json.loads(json_str)
@@ -81,7 +82,7 @@ def generate_results(input_id, input_sent, json_str):
         
         seg_json_str = json.dumps(seg_json, ensure_ascii=False)
         
-        term_json_obj, status = call_sh_to_term(seg, seg_json_str)
+        term_json_obj, status = call_sh_to_term(seg, seg_json_str, text_type)
         term_id = input_id + "." + str(segment_id)
         sent_json[term_id] = {
 #            "term_index" : term_id,
@@ -90,41 +91,4 @@ def generate_results(input_id, input_sent, json_str):
         }
     
     return sent_json, status
-
-
-inp_f = open(inp, "r", encoding="utf-8")
-inp_contents = inp_f.read()
-inp_f.close()
-
-res_f = open(res, "r", encoding="utf-8")
-res_contents = res_f.read()
-res_f.close()
-
-inp_list = list(filter(None, inp_contents.split("\n")))
-res_list = list(filter(None, res_contents.split("\n")))
-
-sent_json_dict = {}
-sent_json_lst = []
-
-for i in tqdm(range(len(inp_list))):
-# for i in range(len(inp_list)):
-    item = inp_list[i].split("\t")
     
-    input_id = item[0]
-    input_sent = item[-1]
-    
-    json_str = res_list[i]
-    
-    sent_json_obj, status = generate_results(input_id, input_sent, json_str)
-    
-    if status == "skip":
-        continue
-    
-    sent_json_dict[input_sent] = sent_json_obj
-    sent_json_lst.append((input_id + "\t" + input_sent + "\t" + json.dumps(sent_json_obj, ensure_ascii=False)))
-
-with open(out, "w", encoding="utf-8") as f:
-    json.dump(sent_json_dict, f, ensure_ascii=False)
-    
-with open(out2, "w", encoding="utf-8") as f:
-    f.write("\n".join(sent_json_lst))
