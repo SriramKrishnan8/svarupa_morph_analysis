@@ -54,11 +54,11 @@ def generate_results(input_id, input_sent, json_str, text_type):
     
     segs = segmentation[0] if segmentation else ""
     for seg in segs.split(" "):
+        if "।" in seg or "." in seg or "॥" in seg:
+            continue
+        
         segment_id += 1
         seg_input = seg
-        
-        if "।" in seg or "." in seg:
-            continue
         
         seg_status = "unrecognized" if ("#" in seg or "?" in seg) else "success"
         seg_segmentation = [ seg ]
