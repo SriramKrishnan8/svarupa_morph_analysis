@@ -36,15 +36,19 @@ def wsmp_sh_res():
             us="f", output_encoding="deva", segmentation_mode="s", 
             text_type="t", stemmer="t")
         
-        sent_analysis_str = json.dumps(sent_analysis, ensure_ascii=False)
-        
-        sent_analysis_json, status = generate_results(mantra_id, cleaned_mantra, sent_analysis_str, "sent")
+        if sent_analysis["status"] == "success":
+            sent_analysis_str = json.dumps(sent_analysis, ensure_ascii=False)
+            sent_analysis_json, status = generate_results(mantra_id, cleaned_mantra, sent_analysis_str, "sent")
+            status_code = 200
+        else:
+            sent_analysis_json = {}
+            status_code = 504
         
         response_json = json.dumps(sent_analysis_json, ensure_ascii=False)
         
         return Response(
             response=response_json,
-            status=200,
+            status=status_code,
             mimetype='application/json'
         )
     
