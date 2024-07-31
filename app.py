@@ -14,20 +14,38 @@ cgi_file = "/usr/lib/cgi-bin/SKT/sktgraph2"
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-@app.route('/sh-wsmp', methods=['GET'])
-def wsmp_sh_res():
-    mantra_id = request.args.get('mantra_index')
-    mantra_text = request.args.get('mantra')
+status_messages = {
+    200 : "success", # SH is able to segment either fully or partially
+    504: "timeout", # SH time out (temporarily 30s)
+    400: "error", # Input Error
+    500: "failed", # Unknown Anomaly
+    503: "unrecognized", # SH cannot recognize or segment it
+}
+
+status_codes = {
+    "success": 200, # SH is able to segment either fully or partially
+    "timeout": 504, # SH time out (temporarily 30s)
+    "error": 400, # Input Error
+    "failed": 500, # Unknown Anomaly
+    "unrecognized": 503, # SH cannot recognize or segment it
+}
+
+status_messages = {
+    "success": "SH is able to segment either fully or partially",
+    "timeout": "SH time out (temporarily 30s)",
+    "error": "Input Error",
+    "failed": "Unknown Anomaly",
+    "unrecognized": "SH cannot recognize or segment it",
+}
+
+
+def wsmp_sh_res(mantra_id, mantra_text):
+    """ """
     
     if not mantra_id or not mantra_text:
-#        return jsonify({"error": "Missing input_id or input_text"}), 400
         response_json = {"error": "Missing input_id or input_text"}
-        response_json_str = json.dumps(response_json, ensure_ascii=False)
-        return Response(
-            response=response_json_str,
-            status=400,
-            mimetype='application/json'
-        )
+        status_code = 400
+        return response_json, status_code
     
     try:
         cleaned_mantra = clean_all(mantra_text)
@@ -36,32 +54,60 @@ def wsmp_sh_res():
             us="f", output_encoding="deva", segmentation_mode="s", 
             text_type="t", stemmer="t")
         
-        if sent_analysis["status"] == "success":
+        status = sent_analysis.get("status", "")
+        error = sent_analysis.get("error", "")
+        if status == "success":
             sent_analysis_str = json.dumps(sent_analysis, ensure_ascii=False)
-            sent_analysis_json, status = generate_results(mantra_id, cleaned_mantra, sent_analysis_str, "sent")
+            response_json, _ = generate_results(mantra_id, cleaned_mantra, sent_analysis_str, "sent")
             status_code = 200
         else:
-            sent_analysis_json = {}
-            status_code = 504
-        
-        response_json = json.dumps(sent_analysis_json, ensure_ascii=False)
-        
-        return Response(
-            response=response_json,
-            status=status_code,
-            mimetype='application/json'
-        )
-    
+            response_json = {status : error}
+            status_code = status_codes.get(status, 500)
+            
     except Exception as e:
-#        return jsonify({"error": str(e)}), 500
-        response_json = {"error": str(e)}
-        response_json_str = json.dumps(response_json, ensure_ascii=False)
-        return Response(
-            response=response_json,
-            status=500,
-            mimetype='application/json'
-        )
+        response_json = {"failed": str(e)}
+        status_code = 500
+    
+    return response_json, status_code
         
+
+@app.route('/sh-wsmp', methods=['GET'])
+def wsmp_sh_res_get():
+    """ """
+    
+    mantra_id = request.args.get('mantra_index')
+    mantra_text = request.args.get('mantra')
+    
+    response_json, status_code = wsmp_sh_res(mantra_id, mantra_text)
+    
+    response_json_str = json.dumps(response_json, ensure_ascii=False)
+    
+    return Response(
+        response=response_json_str,
+        status=status_code,
+        mimetype='application/json'
+    )
+
+
+@app.route('/sh-wsmp', methods=['POST'])
+def wsmp_sh_res_post():
+    """ """
+    
+    data = request.get_json()
+    
+    mantra_id = data.get('mantra_index')
+    mantra_text = data.get('mantra')
+    
+    response_json, status_code = wsmp_sh_res(mantra_id, mantra_text)
+    
+    response_json_str = json.dumps(response_json, ensure_ascii=False)
+    
+    return Response(
+        response=response_json_str,
+        status=status_code,
+        mimetype='application/json'
+    )
+    
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=80)
