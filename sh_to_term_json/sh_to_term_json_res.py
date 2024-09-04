@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 import shToTJN as s2t
 
-def call_sh_to_term(input_, json_str):
+def call_sh_to_term(input_, json_str, text_type):
     """ """
 
     term_json_obj = []

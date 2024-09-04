@@ -14,7 +14,7 @@ python3 wsmp_sh_run.py DN deva sent first -i ../tmp_wsmp_cleaned_sentences.tsv -
 cd ..
 
 # SH to term_json
-python3 sh_to_term_json/generate_wsmp_results_run.py $INPUT_FILE tmp_wsmp_res_sh.tsv tmp_term_wsmp_res.json $OUTPUT_FILE "sent"
+python3 sh_to_term_json/generate_wsmp_results_run.py $INPUT_FILE tmp_wsmp_res_sh.tsv tmp_term_wsmp_res.json $OUTPUT_FILE
 
 # rm tmp*
 

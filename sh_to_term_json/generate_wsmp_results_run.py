@@ -15,7 +15,7 @@ else:
 def main():
     """ """
     
-    script, inp, res, out, out2, text_type = sys.argv
+    script, inp, res, out, out2 = sys.argv
     
     inp_f = open(inp, "r", encoding="utf-8")
     inp_contents = inp_f.read()
@@ -40,7 +40,7 @@ def main():
         
         json_str = res_list[i]
         
-        sent_json_obj, status = gwr.generate_results(input_id, input_sent, json_str, "sent")
+        sent_json_obj, status = gwr(input_id, input_sent, json_str, "sent")
         
         if status == "skip":
             continue
@@ -53,3 +53,7 @@ def main():
         
     with open(out2, "w", encoding="utf-8") as f:
         f.write("\n".join(sent_json_lst))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,27 @@
 import json
 
+pronoun_stems = [
+    "त्वद्", "मद्", "अस्मद्", "युष्मद्", "तद्", "यद्", "एतद्", "किम्", "त्यद्", "इदम्", "अदस्", "एक", "द्वि", "भवतु",
+    "सर्व", "विश्व", "उभ", "उभय", "डतर", "डतम", "अन्य", "अन्यतर", "इतर", "त्वत्", "त्व", "नेम", "सम","सिम",
+    "पूर्व", "पर", "अवर", "दक्षिण", "उत्तर", "अपर", "अधर", "स्व", "अन्तर",
+]
+
+cardinal_stems = [
+    "एक", "द्वि", "त्रि", "चतुर्", "पञ्चन्", "षष्", "सप्तन्", "अष्टन्", "नवन्", "दशन्",
+    "एकादशन्", "द्वादशन्", "त्रयोदशन्", "चतुर्दशन्", "पञ्चदशन्", "षोडशन्", "सप्तदशन्", "अष्टदशन्", "नवदशन्",
+    "विंशति", "त्रिंशत्", "चत्वारिंशत्", "पञ्चाशत्", "षष्टि", "सप्तति", "अशीति", "नवति", "शतम्",
+]
+
+def is_noun(inflectional_morph):
+    """ Checks whether the given morph analysis corresponds to a noun or not """
+    
+    cases = [
+        "nom.", "acc.", "i.", "dat.", "abl.", "gen.", "loc.", "voc.",
+        "iic.", 
+    ]
+    
+    return any([c in inflectional_morph for c in cases])    
+    
 
 class SHMorph:
     def __init__(self):
@@ -102,12 +124,37 @@ class Morph:
 def convertToBaseList(morphList):
     baseList = []
     for morph in morphList:
+        stem = morph.stem
         inflectionalMorphs = morph.inflectional_morphs
         derivationalMorph = morph.derivational_morph
+        
+        noun_type = ""
+        if stem in pronoun_stems:
+            noun_type = "dei."
+        elif stem in cardinal_stems:
+            noun_type = "car."
+        else:
+            pass
 
         for inflectionalMorph in inflectionalMorphs:
             base = BaseWord(morph)
-            grmr = derivationalMorph + " " + inflectionalMorph if derivationalMorph else inflectionalMorph
+            if not noun_type and is_noun(inflectionalMorph):
+                noun_type = "nam."
+            else:
+                pass
+            
+            if noun_type:
+                if "*" in inflectionalMorph:
+                    inflectionalMorph = inflectionalMorph.replace("*", noun_type)
+                else:
+                    inflectionalMorph += " " + noun_type
+            
+            grmr_lst = [
+                derivationalMorph, inflectionalMorph
+            ]
+            grmr = " ".join(list(filter(None,grmr_lst)))
+#            inflectionalMorph = inflectionalMorph + " " + noun_type if noun_type else inflectionalMorph
+#            grmr = (derivationalMorph + " " + inflectionalMorph) if derivationalMorph else inflectionalMorph
             base.grammar = grmr
             baseList.append(base)
 
@@ -193,6 +240,7 @@ def shToTerm(shJsonStr):
     outerMap = []
     for s in shJson.segmentation:
         # print("\n" + s)
+        s = s.replace("#", "")
         insideList = []
         spaceSeparated = s.split(" ")
         for splitted in spaceSeparated:
