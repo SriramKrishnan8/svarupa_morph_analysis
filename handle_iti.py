@@ -1,12 +1,13 @@
-import os
-import sys
-
 import re
 
 import devtrans as dt
 
+from scl_sandhi_interface import sandhi_words as sw
 
 patterns_dict = {
+    #" iwi$"
+    r'^(.*?) iwi$': r'\1',
+    
     #" iwi " -> 1106
     r'^(.*?)a iwi (.*?)e$': r'\1e iwi \2e', # (219)
     r'^(.*?)A iwi (.*?)E$': r'\1E iwi \2E', # (42)
@@ -41,7 +42,15 @@ patterns_dict = {
     r'^(.*?)I iwy(.*)I$': r'\1I iwi \2I', # (8)
     r'^(.*?)A iwy(.*)E$': r'\1E iwi \2E', # (22)
     r'^(.*?)o iwy(.*)o$': r'\1o iwi \2o', #
+    r'^(.*?)o iwy(.*)U$': r'\1U iwi \2U', #
 
+    #iwI
+    r'^(i.*?[^-])riwI(.*?H)$': r'\1H iwi i\2',
+    r'^(I.*?[^-])riwI(.*?H)$': r'\1H iwi I\2',
+    
+    #[m]iwI
+    r'^([^-]+)miwI(.*?m)$': r'\1m iwi I\2',
+    
     #[mrnxv]iwy -> 474
     r'^(.*?[^-])miwy(.*?)m$': r'\1m iwi \2m', # (226)
     r'^(.*?[^-])riwy(.*?[aAiIuUeEoO])H$': r'\1H iwi \2H', # (84)
@@ -57,6 +66,10 @@ patterns_dict = {
     #ewi -> 536
     r'^(.*?)ewi (.*?)A$': r'\1A iwi \2A', # (160)
     r'^(.*?)ewi (.*?)a$': r'\1a iwi \2a', # (376)
+    
+    #ewy
+    r'^([^-]+)ewy([^-]+-[^-]+)A$': r'\1A iwi \2A',
+    r'^([^-]+)ewy([^-]+-[^-]+)a$': r'\1a iwi \2a',
 
     #Iwy -> 137
     r'^([^ ]*?)Iwy([^ ]*?)i$': r'\1i iwi \2i', # (124)
@@ -69,6 +82,16 @@ patterns_dict = {
 
     #iwI (to be done before all)
     r'(.)(.*?)iwI(.*?[^;])$': r'\1\2iwi \1\3', # (20) Handled individually
+    
+    #ewI
+    r'^(i[^-]+)ewI([^-]+-[^-]+)A$': r'\1A iwi i\2A',
+    r'^(i[^-]+)ewI([^-]+-[^-]+)a$': r'\1a iwi i\2a',
+    r'^(I[^-]+)ewI([^-]+-[^-]+)A$': r'\1A iwi I\2A',
+    r'^(I[^-]+)ewI([^-]+-[^-]+)a$': r'\1a iwi I\2a',
+    
+    #-iwy
+    r'^(.*?)a-iwy(.*?H)$': r'\1aH iwi \2', # 
+    r'^(.*?)e-iwy(.*?e)$': r'\1e iwi \2', # 
 }
 
 def get_iti_strings():
@@ -113,6 +136,17 @@ def check_iti_entries(input_string, iti_entries_dict):
     return found, segmented_term, sandhied_term, hyphenated_term
 
 
+def sandhi_items(term):
+    """ """
+
+    sub_terms = term.split("-")
+    sandhied_term = ""
+    for sb_trm in sub_terms:
+        sandhied_term = sw.sandhi_join(sandhied_term, sb_trm, False)
+    
+    return sandhied_term
+
+
 def replace_patterns(input_string, patterns_dict):
     """ """
 
@@ -126,9 +160,20 @@ def replace_patterns(input_string, patterns_dict):
         split_terms = segmented_term.split("इति")
         sandhied_term = split_terms[0].strip()
         hyphenated_term = split_terms[1].strip()
+    elif "iwi" in segmented_term:
+        split_terms = segmented_term.split("iwi")
+        sandhied_term = split_terms[0].strip()
+        hyphenated_term = split_terms[1].strip()
     else:
-        sandhied_term = segmented_term
-        hyphenated_term = ""
+        if "-" in segmented_term:
+            sandhied_term = segmented_term.replace("-", "")
+            # Temporarily not doing the sandhi, only concatenating it
+            # Implement Sandhi module and then uncomment the below
+            # sandhied_term = sandhi_items(segmented_term)
+            hyphenated_term = segmented_term
+        else:
+            sandhied_term = segmented_term
+            hyphenated_term = segmented_term
     
     return segmented_term, sandhied_term, hyphenated_term
 
@@ -146,4 +191,17 @@ def replace_iti(input_string, iti_entries_dict):
             wx_string, patterns_dict
         )
     
+    # The following conditions are temporarily added to make sure that 
+    # none of these are terms are returned empty
+#    if sandhied_term == "" and "-" in segmented_term:
+#        sandhied_term = segmented_term.replace("-", "")
+#    elif "-" in sandhied_term:
+#        sandhied_term.replace("-", "")
+    if sandhied_term == "":
+        if hyphenated_term == "":
+            hyphenated_term = segmented_term
+        sandhied_term = segmented_term.replace("-", "")
+    elif hyphenated_term == "":
+        hyphenated_term = sandhied_term
+            
     return segmented_term, sandhied_term, hyphenated_term
