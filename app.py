@@ -4,12 +4,10 @@ from flask_socketio import SocketIO
 
 import json
 
-from vedic_morph_analyser_sh.wsmp_sh import run_sh_text, cgi_file
+from vedic_morph_analyser_sh.wsmp_sh import run_sh_text
 from sh_to_term_json.generate_wsmp_results import generate_results
 from cleaning import clean_all
 
-# Replace the path with the SKT path
-cgi_file = "/usr/lib/cgi-bin/SKT/sktgraph2"
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -50,7 +48,7 @@ def wsmp_sh_res(mantra_id, mantra_text):
     try:
         cleaned_mantra = clean_all(mantra_text)
         
-        sent_analysis = run_sh_text(cgi_file, cleaned_mantra, "DN", lex="MW", 
+        sent_analysis = run_sh_text(cleaned_mantra, "DN", lex="MW", 
             us="f", output_encoding="deva", segmentation_mode="s", 
             text_type="t", stemmer="t")
         
