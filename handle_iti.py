@@ -81,7 +81,7 @@ patterns_dict = {
 
 
     #iwI (to be done before all)
-    r'(.)(.*?)iwI(.*?[^;])$': r'\1\2iwi \1\3', # (20) Handled individually
+#    r'(.)(.*?)iwI(.*?[^;])$': r'\1\2iwi \1\3', # (20) Handled individually
     
     #ewI
     r'^(i[^-]+)ewI([^-]+-[^-]+)A$': r'\1A iwi i\2A',
@@ -142,7 +142,7 @@ def sandhi_items(term):
     sub_terms = term.split("-")
     sandhied_term = ""
     for sb_trm in sub_terms:
-        sandhied_term = sw.sandhi_join(sandhied_term, sb_trm, False)
+        sandhied_term = sw.sandhi_join(sandhied_term, sb_trm, True)
     
     return sandhied_term
 
@@ -150,13 +150,15 @@ def sandhi_items(term):
 def replace_patterns(input_string, patterns_dict):
     """ """
 
-    segmented_term = input_string
+    segmented_term = str(input_string)
     for pattern, replacement in patterns_dict.items():
         segmented_term = re.sub(pattern, replacement, segmented_term)
 
     segmented_term = dt.wx2dev(segmented_term)
     
-    if "इति" in segmented_term:
+    iwi_exception_condition = "इतिः" in segmented_term or "इतिम्" in segmented_term or "इतीम्" in segmented_term
+    
+    if "इति" in segmented_term and not iwi_exception_condition:
         split_terms = segmented_term.split("इति")
         sandhied_term = split_terms[0].strip()
         hyphenated_term = split_terms[1].strip()
@@ -169,7 +171,7 @@ def replace_patterns(input_string, patterns_dict):
             sandhied_term = segmented_term.replace("-", "")
             # Temporarily not doing the sandhi, only concatenating it
             # Implement Sandhi module and then uncomment the below
-            # sandhied_term = sandhi_items(segmented_term)
+            sandhied_term = sandhi_items(segmented_term)
             hyphenated_term = segmented_term
         else:
             sandhied_term = segmented_term

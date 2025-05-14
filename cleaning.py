@@ -124,14 +124,21 @@ def replace_others(input_string):
     return text
 
 
+def replace_terminal_m(input_string):
+    """ """
+    
+    return re.sub(r'ं$', 'म्', input_string)
+    
+
 def clean_all(input_string):
     """ Runs all the cleaning functions
     """
     
     new_text = remove_svara(input_string)
+    new_text = replace_terminal_m(new_text)
     new_text = remove_non_unicode(new_text)
     new_text = check_chandrabindu(new_text)
     new_text = replace_others(new_text)
-#    new_text = replace_avagraha(new_text)
+    new_text = replace_avagraha(new_text)
     
     return new_text

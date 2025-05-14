@@ -27,6 +27,8 @@ headers = []
 for i in tqdm(range(len(inp_list))):
 # for i in range(len(inp_list)):
     item = inp_list[i].split("\t")
+    if "term_text" in item:
+        continue
     
     input_ = item[0]
     all_det = item[:-1]
@@ -49,5 +51,5 @@ term_json_lst_str = [ "\t".join(x) for x in term_json_lst ]
 with open(out2, "w", encoding="utf-8") as f:
     f.write("\n".join(term_json_lst_str))
 
-df = pd.DataFrame(term_json_lst, columns=headers + ['term_json_new'])
+df = pd.DataFrame(term_json_lst, columns=headers[:-1] + ['term_json_new'])
 df.to_excel(out_excel, index=False)

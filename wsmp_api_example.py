@@ -3,7 +3,10 @@ import json
 
 #url = "http://35.165.153.173:5000/sh-wsmp" # OLD
 #url = "http://44.243.100.111:5000/sh-wsmp"  # CUR
-url = "http://10.2.62.67:5000/sh-wsmp" # Local
+#url = "http://10.2.62.67:5000/sh-wsmp" # Local
+
+# Word Segmentation and Morphological Parsing
+url = "http://10.2.40.131:5000/sh-wsmp" # Local
 params = {
     'mantra_index': '1.1.1',
     'mantra': 'अ॒ग्निमी॑ळे पु॒रोहि॑तं य॒ज्ञस्य॑ दे॒वमृ॒त्विज॑म् । होता॑रं रत्न॒धात॑मम् ॥'
@@ -18,6 +21,18 @@ params = {
 #    'mantra': 'शुषो वाह्नेभ्यो भारद्वाजोऽरालाद्दार्तेयाच्छौनकात्',
 }
 
+# Morphological Parsing
+url = "http://10.2.40.131:5000/sh-mp"
+params = {
+    'term_index' : '1.1.1.1.8',
+    'term_text' : 'शतक्रतो इति शतऽक्रतो',
+    # 'term_text' : 'ब्रह्म',
+    # 'term_text' : 'त्रिऽसप्ताः',
+    # 'term_text' : 'त्रिषप्ताः',
+    # 'term_text' : 'रत्न॒धात॑मम्',
+    # 'term_text' : 'अग्निम्ंः',
+}
+
 #response = requests.get(url, params=params)
 response = requests.post(url, json=params)
 
@@ -30,6 +45,8 @@ except ValueError as e:
     
     
 """
-Response printed as above:
+Response for WSMP printed as above:
 {"1.1.1.1": {"term_text": "अग्निम्", "term_json_new": [{"name": "अग्निम्", "morphList": [{"name": "अग्निम्", "grammarList": [{"baseElement": "अग्निम्", "stem": "अग्नि", "grammar": "m. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}]}, "1.1.1.2": {"term_text": "ईडे", "term_json_new": [{"name": "ईडे", "morphList": [{"name": "ईडे", "grammarList": [{"baseElement": "ईडे", "stem": "", "grammar": "pft. mo. sg. 3", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "ईड्", "selected": false}, {"baseElement": "ईडे", "stem": "", "grammar": "pft. mo. sg. 1", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "ईड्", "selected": false}, {"baseElement": "ईडे", "stem": "", "grammar": "pr. [2] mo. sg. 1", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "ईड्", "selected": false}]}], "selected": false, "source": "SH"}]}, "1.1.1.3": {"term_text": "पुरोहितम्", "term_json_new": [{"name": "पुरोहितम्", "morphList": [{"name": "पुरोहितम्", "grammarList": [{"baseElement": "पुरोहितम्", "stem": "पुरस्-हित#2", "grammar": "pp. n. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "पुरस्-धा#1", "selected": false}, {"baseElement": "पुरोहितम्", "stem": "पुरस्-हित#2", "grammar": "pp. n. sg. nom.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "पुरस्-धा#1", "selected": false}, {"baseElement": "पुरोहितम्", "stem": "पुरस्-हित#2", "grammar": "pp. m. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "पुरस्-धा#1", "selected": false}]}], "selected": false, "source": "SH"}]}, "1.1.1.4": {"term_text": "यज्ञस्य", "term_json_new": [{"name": "यज्ञस्य", "morphList": [{"name": "यज्ञस्य", "grammarList": [{"baseElement": "यज्ञस्य", "stem": "यज्ञ", "grammar": "m. sg. g.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}]}, "1.1.1.5": {"term_text": "देवम्", "term_json_new": [{"name": "देवम्", "morphList": [{"name": "देवम्", "grammarList": [{"baseElement": "देवम्", "stem": "देव", "grammar": "m. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}, {"baseElement": "देवम्", "stem": "देव", "grammar": "n. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}, {"baseElement": "देवम्", "stem": "देव", "grammar": "n. sg. nom.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}]}, "1.1.1.6": {"term_text": "ऋत्विजम्", "term_json_new": [{"name": "ऋत्विजम्", "morphList": [{"name": "ऋत्विजम्", "grammarList": [{"baseElement": "ऋत्विजम्", "stem": "ऋत्विज्", "grammar": "m. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}]}, "1.1.1.8": {"term_text": "होतारम्", "term_json_new": [{"name": "होतारम्", "morphList": [{"name": "होतारम्", "grammarList": [{"baseElement": "होतारम्", "stem": "होतृ", "grammar": "m. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}, {"baseElement": "होतारम्", "stem": "होतृ", "grammar": "f. sg. acc.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}]}, "1.1.1.9": {"term_text": "?रत्नधातमम्", "term_json_new": [{"name": "?रत्नधातमम्", "morphList": [{"name": "?रत्नधातमम्", "grammarList": []}], "selected": false, "source": "SH"}]}}
+# Response for MP printed as above:
+[{"name": "शतक्रतो", "morphList": [{"name": "शतक्रतो", "grammarList": [{"baseElement": "शतक्रतो", "stem": "शतक्रतु", "grammar": "m. sg. voc. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}, {"name": "शत-क्रतो", "morphList": [{"name": "शत-क्रतो", "grammarList": [{"baseElement": "शत-", "stem": "शत", "grammar": "iic. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}, {"name": "शत-क्रतो", "grammarList": [{"baseElement": "क्रतो", "stem": "क्रतु", "grammar": "m. sg. voc. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}, {"baseElement": "क्रतो", "stem": "क्रतु", "grammar": "f. sg. voc. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}]
 """

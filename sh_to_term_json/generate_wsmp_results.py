@@ -16,7 +16,10 @@ def call_sh_to_term(input_, json_str, text_type):
     term_json_obj = []
     if "final_json" in json_str:
         status = "skip"
-    elif ("unrecognized" in json_str and text_type == "word") or "error" in json_str:
+    elif ("unrecognized" in json_str and text_type == "word") or "Error" in json_str:
+    # Handle the error properly. Currently all the sub sentence ids are provided 
+    # followed by a colon and the hyphen if there is no error, otherwise the error
+    # is considered
         status = "unrecognized"
         term_json_obj = [
             {"name": input_, "morphList": [], "selected": "false", "source" : ""}
@@ -41,6 +44,14 @@ def get_morphs(morph_list, segment):
     return morphs
     
 
+def generate_word_results(input_id, input_word, json_str, text_type):
+    """ """
+    
+    morph_analysis, _ = call_sh_to_term(input_word, json_str, text_type)
+    
+    return morph_analysis
+    
+    
 def generate_results(input_id, input_sent, json_str, text_type):
     """ """
     
@@ -52,6 +63,7 @@ def generate_results(input_id, input_sent, json_str, text_type):
     segment_id = 0
     status = ""
     
+    # Choosing the first segmentation and getting its terms and analysis
     segs = segmentation[0] if segmentation else ""
     for seg in segs.split(" "):
         if "।" in seg or "." in seg or "॥" in seg:
