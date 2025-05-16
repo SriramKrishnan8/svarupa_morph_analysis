@@ -2,7 +2,7 @@ import re
 
 import devtrans as dt
 
-from scl_sandhi_interface import sandhi_words as sw
+from scl_sandhi_interface.sandhi_joiner import run_sandhi
 
 patterns_dict = {
     #" iwi$"
@@ -142,7 +142,7 @@ def sandhi_items(term):
     sub_terms = term.split("-")
     sandhied_term = ""
     for sb_trm in sub_terms:
-        sandhied_term = sw.sandhi_join(sandhied_term, sb_trm, True)
+        sandhied_term = run_sandhi(sandhied_term, sb_trm, "DN", "deva", "i")
     
     return sandhied_term
 
@@ -168,7 +168,7 @@ def replace_patterns(input_string, patterns_dict):
         hyphenated_term = split_terms[1].strip()
     else:
         if "-" in segmented_term:
-            sandhied_term = segmented_term.replace("-", "")
+            # sandhied_term = segmented_term.replace("-", "")
             # Temporarily not doing the sandhi, only concatenating it
             # Implement Sandhi module and then uncomment the below
             sandhied_term = sandhi_items(segmented_term)

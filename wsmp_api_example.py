@@ -2,12 +2,12 @@ import requests
 import json
 
 #url = "http://35.165.153.173:5000/sh-wsmp" # OLD
-#url = "http://44.243.100.111:5000/sh-wsmp"  # CUR
-#url = "http://10.2.62.67:5000/sh-wsmp" # Local
+url_wsmp_server = "http://44.243.100.111:5000/sh-wsmp"  # CUR
+# url = "http://10.2.62.67:5000/sh-wsmp" # Local
 
 # Word Segmentation and Morphological Parsing
-url = "http://10.2.40.131:5000/sh-wsmp" # Local
-params = {
+url_wsmp_local = "http://10.2.40.131:5000/sh-wsmp" # Local
+params_wsmp = {
     'mantra_index': '1.1.1',
     'mantra': 'अ॒ग्निमी॑ळे पु॒रोहि॑तं य॒ज्ञस्य॑ दे॒वमृ॒त्विज॑म् । होता॑रं रत्न॒धात॑मम् ॥'
 #    'mantra': 'ब्रह्म च वा इदम् अग्रे सुब्रह्म चास्ताम्॥' # example for Success
@@ -22,19 +22,21 @@ params = {
 }
 
 # Morphological Parsing
-url = "http://10.2.40.131:5000/sh-mp"
-params = {
+url_mp_local = "http://10.2.40.131:5000/sh-mp" # Local
+url_mp_server = "http://44.243.100.111:5000/sh-mp" # CUR
+params_mp = {
     'term_index' : '1.1.1.1.8',
     'term_text' : 'शतक्रतो इति शतऽक्रतो',
     # 'term_text' : 'ब्रह्म',
     # 'term_text' : 'त्रिऽसप्ताः',
     # 'term_text' : 'त्रिषप्ताः',
-    # 'term_text' : 'रत्न॒धात॑मम्',
+    # 'term_text' : 'रत्न॒ऽधात॑मम्',
     # 'term_text' : 'अग्निम्ंः',
+    # 'term_text' : 'पुरःऽहितम्',
 }
 
 #response = requests.get(url, params=params)
-response = requests.post(url, json=params)
+response = requests.post(url_mp_local, json=params_mp)
 
 try:
     data = json.dumps(response.json(), ensure_ascii=False)
