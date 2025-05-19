@@ -52,10 +52,10 @@ cd ..
 
 # Generate SH final results
 [ ! -f cache_sh.json ] && echo "{}" > cache_sh.json
-python3 generate_results_new_sh_scl.py $INPUT_FILE tmp_res_sh_sa.tsv tmp_res_sh_hy.tsv tmp_res_sh_final.tsv tmp_res_sh_final_all.tsv cache_sh.json tmp_res_sh_overall_analysis.tsv "sh"
+python3 generate_results_new_sh_scl_with_source.py $INPUT_FILE tmp_res_sh_sa.tsv tmp_res_sh_hy.tsv tmp_res_sh_final.tsv tmp_res_sh_final_all.tsv cache_sh.json tmp_res_sh_overall_analysis.tsv "sh"
 # Generate SCL final results
 [ ! -f cache_scl.json ] && echo "{}" > cache_scl.json
-python3 generate_results_new_sh_scl.py $INPUT_FILE tmp_res_scl_sa.tsv tmp_res_scl_hy.tsv tmp_res_scl_final.tsv tmp_res_scl_final_all.tsv cache_scl.json tmp_res_scl_overall_analysis.tsv "scl"
+python3 generate_results_new_sh_scl_with_source.py $INPUT_FILE tmp_res_scl_sa.tsv tmp_res_scl_hy.tsv tmp_res_scl_final.tsv tmp_res_scl_final_all.tsv cache_scl.json tmp_res_scl_overall_analysis.tsv "scl"
 # Generate DCS final results
 python3 generate_results_new_dcs.py $INPUT_FILE tmp_res_dcs_rv_sa.tsv tmp_res_dcs_rv_hy.tsv tmp_res_dcs_av_sa.tsv tmp_res_dcs_av_hy.tsv tmp_res_dcs_final.tsv tmp_res_dcs_final_all.tsv tmp_res_dcs_overall_analysis.tsv
 paste tmp_input_orig.tsv tmp_input_segmented.tsv tmp_input_sandhied.tsv tmp_input_hyphenated.tsv tmp_res_dcs_rv_sa.tsv tmp_res_dcs_av_sa.tsv tmp_res_dcs_rv_hy.tsv tmp_res_dcs_av_hy.tsv tmp_res_dcs_final.tsv > tmp_res_dcs_for_sheet.tsv

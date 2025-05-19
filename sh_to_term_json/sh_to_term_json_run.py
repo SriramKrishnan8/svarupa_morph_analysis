@@ -24,11 +24,8 @@ term_json_dict = {}
 term_json_lst = []
 headers = []
 
-for i in tqdm(range(len(inp_list))):
-# for i in range(len(inp_list)):
-    item = inp_list[i].split("\t")
-    if "term_text" in item:
-        continue
+for it in tqdm(inp_list):
+    item = it.split("\t")
     
     input_ = item[0]
     all_det = item[:-1]
@@ -37,7 +34,7 @@ for i in tqdm(range(len(inp_list))):
     term_json_obj, status = call_sh_to_term(input_, json_str, text_type)
     
     if status == "skip":
-        headers = all_det
+        headers = item
         continue
     
     term_json_dict[input_] = term_json_obj
