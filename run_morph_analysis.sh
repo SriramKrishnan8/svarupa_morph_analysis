@@ -47,9 +47,6 @@ echo "Hyphenated..."
 python3 get_dcs_sh_morph.py av_analysis_map.tsv ../tmp_input_hyphenated.tsv ../tmp_res_dcs_av_hy.tsv
 cd ..
 
-# Generate final results
-# python3 generate_results_new.py $INPUT_FILE tmp_res_sh_sa.tsv tmp_res_sh_hy.tsv tmp_res_scl_sa.tsv tmp_res_scl_hy.tsv tmp_res_dcs_rv_sa.tsv tmp_res_dcs_rv_hy.tsv tmp_res_dcs_av_sa.tsv tmp_res_dcs_av_hy.tsv tmp_final_res.tsv final_result_all.tsv cache.json tmp_overall_analysis.tsv
-
 # Generate SH final results
 [ ! -f cache_sh.json ] && echo "{}" > cache_sh.json
 python3 generate_results_new_sh_scl_with_source.py $INPUT_FILE tmp_res_sh_sa.tsv tmp_res_sh_hy.tsv tmp_res_sh_final.tsv tmp_res_sh_final_all.tsv cache_sh.json tmp_res_sh_overall_analysis.tsv "sh"
@@ -69,6 +66,10 @@ echo "Generating term_json for DCS analyses..."
 python3 sh_to_term_json_run.py ../tmp_res_dcs_overall_analysis.tsv ../dcs_term_res.json ../dcs_term_res.tsv ../dcs_term_res.xlsx word
 cd ..
 
-rm tmp*
+# Generate single final results
+[ ! -f cache.json ] && echo "{}" > cache.json
+python3 generate_results_new.py $INPUT_FILE tmp_res_sh_sa.tsv tmp_res_sh_hy.tsv tmp_res_scl_sa.tsv tmp_res_scl_hy.tsv tmp_res_dcs_rv_sa.tsv tmp_res_dcs_rv_hy.tsv tmp_res_dcs_av_sa.tsv tmp_res_dcs_av_hy.tsv tmp_final_res.tsv final_result_all.tsv cache.json tmp_overall_analysis.tsv
+
+# rm tmp*
 
 echo "Done."

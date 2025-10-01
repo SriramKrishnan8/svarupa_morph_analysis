@@ -1,4 +1,4 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify, make_response
 import logging
 from flask_socketio import SocketIO
 
@@ -36,6 +36,12 @@ status_messages = {
     "failed": "Unknown Anomaly",
     "unrecognized": "SH cannot recognize or segment it",
 }
+
+
+# ---------- Helper ----------
+def make_json_response(data, status=200):
+    """Utility to standardize JSON responses."""
+    return make_response(jsonify(data), status)
 
 
 def wsmp_sh_res(mantra_id, mantra_text):
@@ -143,7 +149,67 @@ def mp_sh_res(term_index, term_text):
         })
         status_code = 500
     
-    return response_json, status_code    
+    return response_json, status_code
+
+
+def word_segmentation(text, mode):
+    """ 
+    Segment a Sanskrit text using SH segmenter with configurable mode.
+
+    Args:
+        text (str): Input Sanskrit text.
+        mode (str): Segmentation mode, either "s" (single) or "l" (list).
+
+    Returns:
+        tuple: (response_json, status_code)
+    
+    """
+    
+    if not text:
+        return {"status" : "failure", "error": "Missing input_text"}, 400
+    
+    try:
+        cleaned_text = clean_all(text)
+        seg_mode = "s" if mode not in {"s", "l"} else mode
+        
+        sent_analysis = run_sh_text(
+            cleaned_text, 
+            "DN", 
+            lex="MW", 
+            us="f", 
+            output_encoding="deva", 
+            segmentation_mode=seg_mode, 
+            text_type="f", # "t" for sent, "f" for word
+            stemmer="t"
+        )
+        
+        status = sent_analysis.get("status", "")
+        error = sent_analysis.get("error", "")
+        segmentation = sent_analysis.get("segmentation", [])
+
+        if status == "success":
+            if not segmentation:
+                return {"status": "failure", "error": "No segmentation"}, 500
+            
+            # single segmentation mode: only first valid result
+            if seg_mode == "s" and "error" not in segmentation[0]:
+                return {"status": "success", "segmentation": segmentation[:1]}, 200
+            
+            # list segmentation mode: return full result
+            if seg_mode == "l":
+                return {"status": "success", "segmentation": segmentation}, 200
+            
+            # segmentation failure
+            return {"status": "failure", "error": segmentation[0]}, 500
+        
+        # general failure
+        return {
+            "status": "failure",
+            "error": f"{status} - {error}"
+        }, status_codes.get(status, 500)
+    
+    except Exception as e:
+        return {"status": "failure", "error": str(e)}, 500
 
 
 @app.route('/sh-wsmp', methods=['GET'])
@@ -202,6 +268,28 @@ def mp_sh_res_post():
         status=status_code,
         mimetype='application/json'
     )
+
+
+@app.route('/sh-ws', methods=['POST'])
+def sh_segmentation():
+    """
+    API endpoint for Sanskrit Heritage word segmentation.
+
+    Expects JSON payload:
+    {
+        "compound": "<input text>",
+        "mode": "s" | "l"   # optional, defaults to "s"
+    }
+    """
+    
+    data = request.get_json(silent=True) or {}
+    compound = data.get('compound', "")
+    mode = data.get('mode', 's')
+
+    if not compound:
+        return make_response(jsonify({"status" : "error", "error": "Missing 'compound'"}), 400)
+    
+    return make_json_response(*word_segmentation(compound, mode))
 
 
 if __name__ == '__main__':
