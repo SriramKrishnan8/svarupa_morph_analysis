@@ -39,14 +39,14 @@ url_ws = "sh-ws"
 # Examples for segmentation of sentence into words
 params_ws_sent_first = {
     # Example for "s" mode with multiple segmentations:
-    "input" : "धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय",
+    "input" : "अग्निमीडे पुरोहितं यज्ञस्य देवमृत्विजम् । होतारं रत्नधातमम् ।।",
     "mode" : "s",  # "s" or "l"
     "type" : "s",  # "s" or "w"
 }
 
 params_ws_sent_top = {
     # Example for "l" mode with multiple segmentations:
-    "input" : "धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय",
+    "input" : "अग्निमीडे पुरोहितं यज्ञस्य देवमृत्विजम् । होतारं रत्नधातमम् ।।",
     "mode" : "l",  # "s" or "l"
     "type" : "s",  # "s" or "w"
 }
@@ -89,7 +89,7 @@ Response : [{"name": "शतक्रतो", "morphList": [{"name": "शतक�
 
 # Response for WS printed as above:
 Request : {'input': 'इन्द्राग्नी', 'mode': 's', 'type': 'w'}
-Response : {"segmentation": "इन्द्र-अग्नी", "status": "success"}
+Response : {"segmentation": ["इन्द्र-अग्नी"], "status": "success"}
 
 Request : {'input': 'रामालयः', 'mode': 'l', 'type': 'w'}
 Response : {"segmentation": ["राम-आलयः", "राम-अलयः", "रामा-आलयः", "रामा-लयः", "रामा-अलयः"], "status": "success"}

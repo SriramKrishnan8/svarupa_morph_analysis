@@ -39,9 +39,16 @@ status_messages = {
 
 
 # ---------- Helper ----------
-def make_json_response(data, status=200):
-    """Utility to standardize JSON responses."""
-    return make_response(jsonify(data), status)
+def make_json_response(response_json, status_code):
+    """
+    Create a Flask Response with UTF-8 JSON (ensure_ascii=False).
+    """
+    
+    return Response(
+        response=json.dumps(response_json, ensure_ascii=False),
+        status=status_code,
+        mimetype='application/json'
+    )
 
 
 def wsmp_sh_res(mantra_id, mantra_text):
@@ -220,16 +227,8 @@ def wsmp_sh_res_get():
     
     mantra_id = request.args.get('mantra_index')
     mantra_text = request.args.get('mantra')
-    
-    response_json, status_code = wsmp_sh_res(mantra_id, mantra_text)
-    
-    response_json_str = json.dumps(response_json, ensure_ascii=False)
-    
-    return Response(
-        response=response_json_str,
-        status=status_code,
-        mimetype='application/json'
-    )
+
+    return make_json_response(*wsmp_sh_res(mantra_id, mantra_text))
 
 
 @app.route('/sh-wsmp', methods=['POST'])
@@ -240,16 +239,8 @@ def wsmp_sh_res_post():
     
     mantra_id = data.get('mantra_index')
     mantra_text = data.get('mantra')
-    
-    response_json, status_code = wsmp_sh_res(mantra_id, mantra_text)
-    
-    response_json_str = json.dumps(response_json, ensure_ascii=False)
-    
-    return Response(
-        response=response_json_str,
-        status=status_code,
-        mimetype='application/json'
-    )
+
+    return make_json_response(*wsmp_sh_res(mantra_id, mantra_text))
     
     
 @app.route('/sh-mp', methods=['POST'])
@@ -260,16 +251,8 @@ def mp_sh_res_post():
     
     term_index = data.get('term_index')
     term_text = data.get('term_text')
-    
-    response_json, status_code = mp_sh_res(term_index, term_text)
-    
-    response_json_str = json.dumps(response_json, ensure_ascii=False)
-    
-    return Response(
-        response=response_json_str,
-        status=status_code,
-        mimetype='application/json'
-    )
+
+    return make_json_response(*mp_sh_res(term_index, term_text))
 
 
 @app.route('/sh-ws', methods=['POST'])
@@ -291,7 +274,7 @@ def sh_segmentation():
     text_type = data.get('type', 's')
 
     if not input_text:
-        return make_response(jsonify({"status" : "error", "error": "Missing 'compound'"}), 400)
+        return make_response(jsonify({"status" : "error", "error": "Missing 'input_text'"}), 400)
     
     return make_json_response(*word_segmentation(input_text, mode, text_type))
 
