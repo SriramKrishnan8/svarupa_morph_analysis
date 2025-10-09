@@ -35,18 +35,40 @@ params_mp = {
 }
 
 url_ws = "sh-ws"
-params_ws = {
-    # Example for "s" mode with single segmentation:
-    "compound" : "इन्द्राग्नी",
+
+# Examples for segmentation of sentence into words
+params_ws_sent_first = {
+    # Example for "s" mode with multiple segmentations:
+    "input" : "धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय",
     "mode" : "s",  # "s" or "l"
+    "type" : "s",  # "s" or "w"
+}
+
+params_ws_sent_top = {
     # Example for "l" mode with multiple segmentations:
-    # "compound" : "रामालयः",
-    # "mode" : "l",  # "s" or "l"
+    "input" : "धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय",
+    "mode" : "l",  # "s" or "l"
+    "type" : "s",  # "s" or "w"
+}
+
+# Examples for segmentation of compound words
+params_ws_word_first = {
+    # Example for "s" mode with single segmentation:
+    "input" : "इन्द्राग्नी",
+    "mode" : "s",  # "s" or "l"
+    "type" : "w",  # "s" or "w"
+}
+
+params_ws_word_top = {
+    # Example for "l" mode with multiple segmentations:
+    "input" : "रामालयः",
+    "mode" : "l",  # "s" or "l"
+    "type" : "w",  # "s" or "w"
 }
 
 #response = requests.get(url, params=params)
 url = url_local + url_ws
-response = requests.post(url, json=params_ws)
+response = requests.post(url, json=params_ws_word_first)
 
 try:
     data = json.dumps(response.json(), ensure_ascii=False)
@@ -66,9 +88,15 @@ Request : {'term_index' : '1.1.1.1.8', 'term_text' : 'शतक्रतो इ�
 Response : [{"name": "शतक्रतो", "morphList": [{"name": "शतक्रतो", "grammarList": [{"baseElement": "शतक्रतो", "stem": "शतक्रतु", "grammar": "m. sg. voc. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}, {"name": "शत-क्रतो", "morphList": [{"name": "शत-क्रतो", "grammarList": [{"baseElement": "शत-", "stem": "शत", "grammar": "iic. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}, {"name": "शत-क्रतो", "grammarList": [{"baseElement": "क्रतो", "stem": "क्रतु", "grammar": "m. sg. voc. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}, {"baseElement": "क्रतो", "stem": "क्रतु", "grammar": "f. sg. voc. nam.", "dcsMeaningsStem": null, "ambudaMenaingsStem": null, "dcsMeaningsRoot": null, "ambudaMenaingsRoot": null, "grammarMap": null, "grammarMapEn": null, "grammarMapSa": null, "rootTermLink": null, "root": "", "selected": false}]}], "selected": false, "source": "SH"}]
 
 # Response for WS printed as above:
-Request : {'compound': 'इन्द्राग्नी', 'mode': 's'}
+Request : {'input': 'इन्द्राग्नी', 'mode': 's', 'type': 'w'}
 Response : {"segmentation": "इन्द्र-अग्नी", "status": "success"}
 
-Request : {'compound': 'रामालयः', 'mode': 'l'}
+Request : {'input': 'रामालयः', 'mode': 'l', 'type': 'w'}
 Response : {"segmentation": ["राम-आलयः", "राम-अलयः", "रामा-आलयः", "रामा-लयः", "रामा-अलयः"], "status": "success"}
+
+Request : {'input': 'धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय', 'mode': 's', 'type': 's'}
+Response : {"segmentation": ["धर्म-क्षेत्रे कुरु-क्षेत्रे समवेताः युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय"], "status": "success"}
+
+Request : {'input': 'धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय', 'mode': 'l', 'type': 's'}
+Response : {"segmentation": ["धर्म-क्षेत्रे कुरु-क्षेत्रे समवेताः युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म-क्षेत्रे कुरु-क्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म-क्षेत्रे कुरु क्षेत्रे समवेताः युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म-क्षेत्रे कुरु क्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म-क्षेत्रे कुरु-क्षेत्रे सम-वेताः युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म-क्षेत्रे कुरु-क्षेत्रे सम-वेता युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म क्षेत्रे कुरु-क्षेत्रे समवेताः युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म क्षेत्रे कुरु-क्षेत्रे समवेता युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म-क्षेत्रे कुरु क्षेत्रे सम-वेताः युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय", "धर्म-क्षेत्रे कुरु क्षेत्रे सम-वेता युयुत्सवः मामकाः पाण्डवाः च एव किम् अकुर्वत सञ्जय"], "status": "success"}
 """

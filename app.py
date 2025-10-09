@@ -152,25 +152,27 @@ def mp_sh_res(term_index, term_text):
     return response_json, status_code
 
 
-def word_segmentation(text, mode):
+def word_segmentation(input_text, mode, text_type):
     """ 
-    Segment a Sanskrit text using SH segmenter with configurable mode.
+    Segment a Sanskrit text using SH segmenter with configurable mode and type
 
     Args:
-        text (str): Input Sanskrit text.
+        input_text (str): Input Sanskrit text.
         mode (str): Segmentation mode, either "s" (single) or "l" (list).
+        text_type (str): Input text type, either sentence "s" or word "w".
 
     Returns:
         tuple: (response_json, status_code)
     
     """
     
-    if not text:
+    if not input_text:
         return {"status" : "failure", "error": "Missing input_text"}, 400
     
     try:
-        cleaned_text = clean_all(text)
+        cleaned_text = clean_all(input_text)
         seg_mode = "s" if mode not in {"s", "l"} else mode
+        seg_text_type = "f" if text_type == "w" else "t"
         
         sent_analysis = run_sh_text(
             cleaned_text, 
@@ -179,7 +181,7 @@ def word_segmentation(text, mode):
             us="f", 
             output_encoding="deva", 
             segmentation_mode=seg_mode, 
-            text_type="f", # "t" for sent, "f" for word
+            text_type=seg_text_type, # "t" for sent, "f" for word
             stemmer="t"
         )
         
@@ -277,19 +279,21 @@ def sh_segmentation():
 
     Expects JSON payload:
     {
-        "compound": "<input text>",
+        "input": "<input text>",
         "mode": "s" | "l"   # optional, defaults to "s"
+        "type": "s" | "w"   # compound segmentation - "w", defaults to "s"
     }
     """
     
     data = request.get_json(silent=True) or {}
-    compound = data.get('compound', "")
+    input_text = data.get('input', "")
     mode = data.get('mode', 's')
+    text_type = data.get('type', 's')
 
-    if not compound:
+    if not input_text:
         return make_response(jsonify({"status" : "error", "error": "Missing 'compound'"}), 400)
     
-    return make_json_response(*word_segmentation(compound, mode))
+    return make_json_response(*word_segmentation(input_text, mode, text_type))
 
 
 if __name__ == '__main__':
