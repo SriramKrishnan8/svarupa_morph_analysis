@@ -9,6 +9,9 @@ from sh_to_term_json.generate_wsmp_results import generate_results, generate_wor
 from cleaning import clean_all
 from handle_iti import replace_iti, get_iti_strings
 
+from scl_sandhi_interface.transliteration import *
+from scl_sandhi_interface.sandhi_words import sandhi_join
+
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -219,6 +222,79 @@ def word_segmentation(input_text, mode, text_type):
     
     except Exception as e:
         return {"status": "failure", "error": str(e)}, 500
+    
+
+def scl_word_sandhi(first, second, sandhi_type):
+    """ """
+
+    internal = True if sandhi_type == "i" else False
+    
+    try:
+        first_word = input_transliteration(first.strip(), "DN")[0]
+        second_word = input_transliteration(second.strip(), "DN")[0]
+        
+        sandhied_word = sandhi_join(first_word, second_word, internal)
+        
+        sandhi_word_out = output_transliteration(sandhied_word, "deva")[0]
+
+        return {"status": "success", "result": sandhi_word_out}, 200
+    except Exception as e:
+        return {"status": "failure", "error": str(e)}, 500
+    
+
+def scl_sandhi(input_text):
+    """ """
+
+    sentences = [s.strip() for s in input_text.split('.') if s.strip()]
+    
+    sandhied_sentences = []
+
+    for sentence in sentences:
+        words = sentence.split(" ")
+        
+        processed_words = []
+        for word in words:
+            if "-" in word:
+                components = word.split("-")
+                sandhied_cpd_word = components[0]
+                for i in range(1, len(components)):
+                    sandhied_cpd_word = sandhi_join(sandhied_cpd_word, components[i], internal=True)
+                
+                processed_words.append(sandhied_cpd_word)
+            else:
+                processed_words.append(word)
+        
+        if not processed_words:
+            continue
+
+        final_sentence = processed_words[0]
+
+        for i in range(1, len(processed_words)):
+            first_word = final_sentence
+            second_word = processed_words[i]
+
+            final_sentence = sandhi_join(first_word, second_word, internal=False)
+        
+        sandhied_sentences.append(final_sentence)
+    
+    return " . ".join(sandhied_sentences) + (" ." if sandhied_sentences else "")
+    
+
+def scl_sent_sandhi(input_text):
+    """ """
+    try:
+        input_wx = input_transliteration(input_text, "DN")[0]
+        
+        sandhied_output = scl_sandhi(input_wx)
+
+        sandhi_word_out = output_transliteration(sandhied_output, "deva")[0]
+
+        return {"status": "success", "result": sandhi_word_out}, 200
+    except Exception as e:
+        return {"status": "failure", "error": str(e)}, 500
+
+
+#-- App Routes --#
 
 
 @app.route('/sh-wsmp', methods=['GET'])
@@ -277,6 +353,50 @@ def sh_segmentation():
         return make_response(jsonify({"status" : "error", "error": "Missing 'input_text'"}), 400)
     
     return make_json_response(*word_segmentation(input_text, mode, text_type))
+
+
+@app.route('/scl-word-sandhi', methods=['POST'])
+def samsaadhanii_word_sandhi():
+    """
+    API endpoint for Samsaadhanii word sandhi.
+
+    Expects JSON payload:
+    {
+        "first": "<first word>",
+        "second": "<second word>"
+        "type": "i" (internal) | "e" (external) # defaults to "e"
+    }
+    """
+    
+    data = request.get_json(silent=True) or {}
+    first = data.get('first', '')
+    second = data.get('second', '')
+    sandhi_type = data.get('type', 'e')
+
+    if not first and not second:
+        return make_response(jsonify({"status" : "error", "error": "Missing 'first' and 'second' words"}), 400)    
+    
+    return make_json_response(*scl_word_sandhi(first, second, sandhi_type))
+
+
+@app.route('/scl-sent-sandhi', methods=['POST'])
+def samsaadhanii_sent_sandhi():
+    """
+    API endpoint for Samsaadhanii sent sandhi.
+
+    Expects JSON payload:
+    {
+        "input": "<input_text>",
+    }
+    """
+    
+    data = request.get_json(silent=True) or {}
+    input_text = data.get('input', '')
+    
+    if not input_text:
+        return make_response(jsonify({"status" : "error", "error": "Missing 'input_text'"}), 400)    
+    
+    return make_json_response(*scl_sent_sandhi(input_text))
 
 
 if __name__ == '__main__':
