@@ -68,7 +68,7 @@ cd ..
 
 # Generate single final results
 [ ! -f cache.json ] && echo "{}" > cache.json
-python3 generate_results_new.py $INPUT_FILE tmp_res_sh_sa.tsv tmp_res_sh_hy.tsv tmp_res_scl_sa.tsv tmp_res_scl_hy.tsv tmp_res_dcs_rv_sa.tsv tmp_res_dcs_rv_hy.tsv tmp_res_dcs_av_sa.tsv tmp_res_dcs_av_hy.tsv tmp_final_res.tsv final_result_all.tsv cache.json tmp_overall_analysis.tsv
+python3 generate_results_new.py $INPUT_FILE tmp_res_sh_sa.tsv tmp_res_sh_hy.tsv tmp_res_scl_sa.tsv tmp_res_scl_hy.tsv tmp_res_dcs_rv_sa.tsv tmp_res_dcs_rv_hy.tsv tmp_res_dcs_av_sa.tsv tmp_res_dcs_av_hy.tsv tmp_final_res.tsv final_res.tsv cache.json tmp_overall_analysis.tsv
 
 # rm tmp*
 

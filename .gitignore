@@ -163,3 +163,6 @@ temp/
 sample*
 cache*
 tmp*
+*res.tsv
+*res.json
+*res.xlsx

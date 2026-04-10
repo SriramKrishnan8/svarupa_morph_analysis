@@ -1,0 +1,7 @@
+pandas
+psutil
+tqdm
+sandhi
+devtrans
+openpyxl
+requests

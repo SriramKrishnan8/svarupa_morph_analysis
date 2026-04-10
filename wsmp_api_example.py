@@ -79,9 +79,120 @@ params_sent_sandhi = {
     "input" : "ओम् ब्रह्म ह वै इदम् अग्रे आसीत् स्वयम् तु एकम् एव तत् ऐक्षत महत् वै यक्षम् तत् एकम् एव अस्मि हन्ता अहम् मत् एव मत्-मात्रम् द्वितीयम् देवम् निर्मिमे इति तत् अभी-अश्र-आम्य-दभ्य-तपत् समतपत् तस्य श्रान्तस्य तप्तस्य सन्तप्तस्य ललाटे स्नेहः यदार्द्द्यमाजायत तेनानम् दत्तम् अब्रवीत् महत् वै यक्षम् सुवे दम-विदा महः इति तत् यत् अब्रवीत् महत् वै यक्षम् सुवे दम-वित् अमहः इति तस्मात् सुवेदोऽभवत्तम् वै एतम् सुव इदम् सन्तम् स्वेदः इति आचक्षते परोक्षेण परोक्ष-प्रियाः इव हि देवाः भवन्ति प्रत्यक्ष-द्विषः",
 }
 
-#response = requests.get(url, params=params)
-url = url_local + url_ws
-response = requests.post(url, json=params_ws_word_first)
+def test_ws_word_first_local():
+    """ """
+
+    return url_local + url_ws, params_ws_word_first
+
+
+def test_ws_word_first_server():
+    """ """
+
+    return url_server + url_ws, params_ws_word_first
+
+
+def test_ws_sent_first_local():
+    """ """
+
+    return url_local + url_ws, params_ws_sent_first
+
+
+def test_ws_sent_first_server():
+    """ """
+
+    return url_server + url_ws, params_ws_sent_first
+
+
+def test_ws_word_top_local():
+    """ """
+
+    return url_local + url_ws, params_ws_word_top
+
+
+def test_ws_word_top_server():
+    """ """
+
+    return url_server + url_ws, params_ws_word_top
+
+
+def test_ws_sent_top_local():
+    """ """
+
+    return url_local + url_ws, params_ws_sent_top
+
+
+def test_ws_sent_top_server():
+    """ """
+
+    return url_server + url_ws, params_ws_sent_top
+
+
+def test_wsmp_local():
+    """ """
+
+    return url_local + url_wsmp, params_wsmp
+
+
+def test_wsmp_server():
+    """ """
+
+    return url_server + url_wsmp, params_wsmp
+
+
+def test_mp_local():
+    """ """
+
+    return url_local + url_mp, params_mp
+
+
+def test_mp_server():
+    """ """
+
+    return url_server + url_mp, params_mp
+
+
+def test_word_sandhi_local():
+    """ """
+
+    return url_local + url_word_sandhi, params_word_sandhi
+
+
+def test_word_sandhi_server():
+    """ """
+
+    return url_server + url_word_sandhi, params_word_sandhi
+
+def test_sent_sandhi_local():
+    """ """
+
+    return url_local + url_sent_sandhi, params_sent_sandhi
+
+
+def test_sent_sandhi_server():
+    """ """
+
+    return url_server + url_sent_sandhi, params_sent_sandhi
+
+
+
+# url, params = test_wsmp_local()
+# url, params = test_wsmp_server()
+# url, params = test_mp_local()
+# url, params = test_mp_server()
+# url, params = test_ws_sent_first_local()
+# url, params = test_ws_sent_first_server()
+# url, params = test_ws_sent_top_local()
+# url, params = test_ws_sent_top_server()
+# url, params = test_ws_word_first_local()
+# url, params = test_ws_word_first_server()
+# url, params = test_ws_word_top_local()
+# url, params = test_ws_word_top_server()
+# url, params = test_sent_sandhi_local()
+# url, params = test_sent_sandhi_server()
+url, params = test_word_sandhi_local()
+# url, params = test_word_sandhi_server()
+
+response = requests.post(url, json=params)
 
 try:
     data = json.dumps(response.json(), ensure_ascii=False)

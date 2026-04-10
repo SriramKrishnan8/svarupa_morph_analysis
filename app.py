@@ -1,7 +1,5 @@
 from flask import Flask, request, Response, jsonify, make_response
-import logging
 from flask_socketio import SocketIO
-
 import json
 
 from vedic_morph_analyser_sh.wsmp_sh import run_sh_text, run_sh_morph_analysis
@@ -16,25 +14,17 @@ from scl_sandhi_interface.sandhi_words import sandhi_join
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-status_messages = {
-    200 : "success", # SH is able to segment either fully or partially
-    504: "timeout", # SH time out (temporarily 30s)
-    400: "error", # Input Error
-    500: "failed", # Unknown Anomaly
-    503: "unrecognized", # SH cannot recognize or segment it
-}
-
 status_codes = {
-    "success": 200, # SH is able to segment either fully or partially
-    "timeout": 504, # SH time out (temporarily 30s)
-    "error": 400, # Input Error
-    "failed": 500, # Unknown Anomaly
-    "unrecognized": 503, # SH cannot recognize or segment it
+    "success": 200,          # SH is able to segment either fully or partially
+    "timeout": 504,          # SH timeout (temporarily 30s)
+    "error": 400,            # Input Error
+    "failed": 500,           # Unknown Anomaly
+    "unrecognized": 503,     # SH cannot recognize or segment
 }
 
 status_messages = {
     "success": "SH is able to segment either fully or partially",
-    "timeout": "SH time out (temporarily 30s)",
+    "timeout": "SH timeout (temporarily 30s)",
     "error": "Input Error",
     "failed": "Unknown Anomaly",
     "unrecognized": "SH cannot recognize or segment it",
@@ -54,34 +44,46 @@ def make_json_response(response_json, status_code):
     )
 
 
+# ---------- Core Functions ----------
 def wsmp_sh_res(mantra_id, mantra_text):
     """ Get word segmentation and morphological analysis of a sentence """
     
     if not mantra_id or not mantra_text:
-        response_json = {"error": "Missing input_id or input_text"}
-        status_code = 400
-        return response_json, status_code
+        response_json = {
+            "status": "error",
+            "error": "Missing input_id or input_text"
+        }
+        return response_json, status_codes.get("error")
     
     try:
         cleaned_mantra = clean_all(mantra_text)
         
-        sent_analysis = run_sh_text(cleaned_mantra, "DN", lex="MW", 
+        sent_analysis = run_sh_text(
+            cleaned_mantra, "DN", lex="MW", 
             us="f", output_encoding="deva", segmentation_mode="s", 
-            text_type="t", stemmer="t")
+            text_type="t", stemmer="t"
+        )
         
         status = sent_analysis.get("status", "")
         error = sent_analysis.get("error", "")
+
         if status == "success":
             sent_analysis_str = json.dumps(sent_analysis, ensure_ascii=False)
             response_json, _ = generate_results(mantra_id, cleaned_mantra, sent_analysis_str, "sent")
-            status_code = 200
+            status_code = status_codes.get("success")
         else:
-            response_json = {status : error}
-            status_code = status_codes.get(status, 500)
+            response_json = {
+                "status": status,
+                "error" : error
+            }
+            status_code = status_codes.get(status, status_codes.get("failed"))
             
     except Exception as e:
-        response_json = {"failed": str(e)}
-        status_code = 500
+        response_json = {
+            "status": "failed",
+            "error": str(e)
+        }
+        status_code = status_codes.get("failed")
     
     return response_json, status_code
         
@@ -90,7 +92,6 @@ def wsmp_sh_res(mantra_id, mantra_text):
 def mp_sh_res(term_index, term_text):
     """ Get possible morphological analyses of the given word """
     
-    
     response_json = {
         "term_index": term_index,
         "term_text": term_text,
@@ -98,10 +99,10 @@ def mp_sh_res(term_index, term_text):
 
     if not term_index or not term_text:
         response_json.update({
-            "status" : "failed",
+            "status" : "error",
             "error": "Missing input_id or input_text",
         })
-        status_code = 400    
+        status_code = status_codes.get("error")    
         return response_json, status_code
     
     try:
@@ -109,16 +110,17 @@ def mp_sh_res(term_index, term_text):
         iti_entries_dict = get_iti_strings()
         segmented_term, sandhied_term, hyphenated_term = replace_iti(cleaned_text, iti_entries_dict)
         
-        morph_analysis_sa = run_sh_morph_analysis(sandhied_term, "DN", lex="MW", 
+        morph_analysis_sa = run_sh_morph_analysis(
+            sandhied_term, "DN", lex="MW", 
             us="f", output_encoding="deva", segmentation_mode="b", 
-            text_type="f", stemmer="t")
+            text_type="f", stemmer="t"
+        )
             
-        morph_analysis_hy = run_sh_morph_analysis(hyphenated_term, "DN", lex="MW", 
+        morph_analysis_hy = run_sh_morph_analysis(
+            hyphenated_term, "DN", lex="MW", 
             us="f", output_encoding="deva", segmentation_mode="b", 
-            text_type="f", stemmer="t")
-        
-        # print("Sandhied: ", morph_analysis_sa)
-        # print("Hyphenated: ", morph_analysis_hy)
+            text_type="f", stemmer="t"
+        )
         
         status = ""
         error = ""
@@ -142,14 +144,14 @@ def mp_sh_res(term_index, term_text):
                 "status" : "success",
                 "term_json_new": morph_analysis_obj,
             })
-            status_code = 200
+            status_code = status_codes.get("success")
         else:
             response_json.update({
                 "status" : "failed",
                 "error" : error,
                 "term_json_new": [],
             })
-            status_code = status_codes.get(status, 500)
+            status_code = status_codes.get(status, status_codes.get("failed"))
             
     except Exception as e:
         response_json.update({
@@ -157,7 +159,7 @@ def mp_sh_res(term_index, term_text):
             "error": str(e),
             "term_json_new": [],
         })
-        status_code = 500
+        status_code = status_codes.get("failed")
     
     return response_json, status_code
 
@@ -177,7 +179,10 @@ def word_segmentation(input_text, mode, text_type):
     """
     
     if not input_text:
-        return {"status" : "failure", "error": "Missing input_text"}, 400
+        return {
+            "status" : "failure",
+            "error": "Missing input_text"
+        }, status_codes.get("error")
     
     try:
         cleaned_text = clean_all(input_text)
@@ -191,7 +196,7 @@ def word_segmentation(input_text, mode, text_type):
             us="f", 
             output_encoding="deva", 
             segmentation_mode=seg_mode, 
-            text_type=seg_text_type, # "t" for sent, "f" for word
+            text_type=seg_text_type,  # "t" for sent, "f" for word
             stemmer="t"
         )
         
@@ -201,27 +206,39 @@ def word_segmentation(input_text, mode, text_type):
 
         if status == "success":
             if not segmentation:
-                return {"status": "failure", "error": "No segmentation"}, 500
+                return {
+                    "status": "failure",
+                    "error": "No segmentation"
+                }, status_codes.get("failed")
             
             # single segmentation mode: only first valid result
             if seg_mode == "s" and "error" not in segmentation[0]:
-                return {"status": "success", "segmentation": segmentation[:1]}, 200
+                return {
+                    "status": "success",
+                    "segmentation": segmentation[:1]
+                }, status_codes.get("success")
             
             # list segmentation mode: return full result
             if seg_mode == "l":
-                return {"status": "success", "segmentation": segmentation}, 200
+                return {
+                    "status": "success",
+                    "segmentation": segmentation
+                }, status_codes.get("success")
             
             # segmentation failure
-            return {"status": "failure", "error": segmentation[0]}, 500
+            return {
+                "status": "failure",
+                "error": segmentation[0]
+            }, status_codes.get("failed")
         
         # general failure
         return {
             "status": "failure",
             "error": f"{status} - {error}"
-        }, status_codes.get(status, 500)
+        }, status_codes.get(status, status_codes.get("failed"))
     
     except Exception as e:
-        return {"status": "failure", "error": str(e)}, 500
+        return {"status": "failure", "error": str(e)}, status_codes.get("failed")
     
 
 def scl_word_sandhi(first, second, sandhi_type):
@@ -350,7 +367,12 @@ def sh_segmentation():
     text_type = data.get('type', 's')
 
     if not input_text:
-        return make_response(jsonify({"status" : "error", "error": "Missing 'input_text'"}), 400)
+        return make_response(
+            jsonify({
+                "status" : "error",
+                "error": "Missing 'input_text'"
+            }), status_codes.get("error")
+        )
     
     return make_json_response(*word_segmentation(input_text, mode, text_type))
 
@@ -400,5 +422,5 @@ def samsaadhanii_sent_sandhi():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=80)
+    socketio.run(app, host='0.0.0.0', port=5000)
 
