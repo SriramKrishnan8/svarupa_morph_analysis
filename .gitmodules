@@ -14,3 +14,6 @@
 	path = dcs_morph_analysis
 	url = https://github.com/SriramKrishnan8/dcs_morph_analysis.git
 	branch = main
+[submodule "byt5_analyzer"]
+	path = byt5_analyzer
+	url = https://github.com/SriramKrishnan8/byt5_analyzer.git
