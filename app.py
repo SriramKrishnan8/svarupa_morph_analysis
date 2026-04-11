@@ -10,9 +10,15 @@ from handle_iti import replace_iti, get_iti_strings
 from scl_sandhi_interface.transliteration import *
 from scl_sandhi_interface.sandhi_words import sandhi_join
 
+from byt5_analyzer.byt5_analyzer import Byt5Analyzer
+from byt5_analyzer.cli import run_byt5_text
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+print("Loading ByT5 Model (this will take a moment)...")
+byt5_engine = Byt5Analyzer()
+print("ByT5 Model loaded successfully.")
 
 status_codes = {
     "success": 200,          # SH is able to segment either fully or partially
@@ -254,9 +260,9 @@ def scl_word_sandhi(first, second, sandhi_type):
         
         sandhi_word_out = output_transliteration(sandhied_word, "deva")[0]
 
-        return {"status": "success", "result": sandhi_word_out}, 200
+        return {"status": "success", "result": sandhi_word_out}, status_codes.get("success")
     except Exception as e:
-        return {"status": "failure", "error": str(e)}, 500
+        return {"status": "failure", "error": str(e)}, status_codes.get("failed")
     
 
 def scl_sandhi(input_text):
@@ -306,9 +312,61 @@ def scl_sent_sandhi(input_text):
 
         sandhi_word_out = output_transliteration(sandhied_output, "deva")[0]
 
-        return {"status": "success", "result": sandhi_word_out}, 200
+        return {"status": "success", "result": sandhi_word_out}, status_codes.get("success")
     except Exception as e:
-        return {"status": "failure", "error": str(e)}, 500
+        return {"status": "failure", "error": str(e)}, status_codes.get("failed")
+
+
+def byt5_wsmp_res(mantra_id, mantra_text):
+    """ Get ByT5 segmentation and morphological analysis """
+    if not mantra_id or not mantra_text:
+        return {"status": "error", "error": "Missing input_id or input_text"}, status_codes.get("error")
+    
+    try:
+        cleaned_mantra = clean_all(mantra_text)
+        res = run_byt5_text(byt5_engine, cleaned_mantra, "DN", "deva", "wsmp")
+        
+        if res.get("status") == "success":
+            res["mantra_index"] = mantra_id
+            return res, status_codes.get("success")
+            
+        return {"status": "failed", "error": res.get("error", "Unknown error")}, status_codes.get("failed")
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}, status_codes.get("failed")
+
+def byt5_mp_res(term_index, term_text):
+    """ Get ByT5 morphological analysis for a single term """
+    if not term_index or not term_text:
+        return {"status": "error", "error": "Missing term_index or term_text"}, status_codes.get("error")
+    
+    try:
+        cleaned_text = clean_all(term_text)
+        res = run_byt5_text(byt5_engine, cleaned_text, "DN", "deva", "mp")
+        
+        if res.get("status") == "success":
+            res["term_index"] = term_index
+            return res, status_codes.get("success")
+            
+        return {"status": "failed", "error": res.get("error", "Unknown error")}, status_codes.get("failed")
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}, status_codes.get("failed")
+
+def byt5_ws_res(input_text):
+    """ Get ByT5 segmentation """
+    if not input_text:
+        return {"status": "error", "error": "Missing 'input_text'"}, status_codes.get("error")
+    
+    try:
+        cleaned_text = clean_all(input_text)
+        
+        res = run_byt5_text(byt5_engine, cleaned_text, "DN", "deva", "ws")
+        
+        if res.get("status") == "success":
+            return res, status_codes.get("success")
+            
+        return {"status": "failed", "error": res.get("error", "Unknown error")}, status_codes.get("failed")
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}, status_codes.get("failed")
 
 
 #-- App Routes --#
@@ -396,7 +454,12 @@ def samsaadhanii_word_sandhi():
     sandhi_type = data.get('type', 'e')
 
     if not first and not second:
-        return make_response(jsonify({"status" : "error", "error": "Missing 'first' and 'second' words"}), 400)    
+        return make_response(
+            jsonify({
+                "status" : "error",
+                "error": "Missing 'first' and 'second' words"
+            }), status_codes.get("error")
+        )    
     
     return make_json_response(*scl_word_sandhi(first, second, sandhi_type))
 
@@ -416,9 +479,47 @@ def samsaadhanii_sent_sandhi():
     input_text = data.get('input', '')
     
     if not input_text:
-        return make_response(jsonify({"status" : "error", "error": "Missing 'input_text'"}), 400)    
+        return make_response(
+            jsonify({
+                "status" : "error",
+                "error": "Missing 'input_text'"
+            }), status_codes.get("error")
+        )    
     
     return make_json_response(*scl_sent_sandhi(input_text))
+
+
+@app.route('/byt5-wsmp', methods=['GET', 'POST'])
+def byt5_wsmp_route():
+    """ """
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        mantra_id = data.get('mantra_index')
+        mantra_text = data.get('mantra')
+    else:
+        mantra_id = request.args.get('mantra_index')
+        mantra_text = request.args.get('mantra')
+
+    return make_json_response(*byt5_wsmp_res(mantra_id, mantra_text))
+
+
+@app.route('/byt5-mp', methods=['POST'])
+def byt5_mp_route():
+    """ """
+    data = request.get_json(silent=True) or {}
+    term_index = data.get('term_index')
+    term_text = data.get('term_text')
+
+    return make_json_response(*byt5_mp_res(term_index, term_text))
+
+
+@app.route('/byt5-ws', methods=['POST'])
+def byt5_ws_route():
+    """ """
+    data = request.get_json(silent=True) or {}
+    input_text = data.get('input', "")
+
+    return make_json_response(*byt5_ws_res(input_text))
 
 
 if __name__ == '__main__':
