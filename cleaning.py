@@ -106,8 +106,8 @@ def replace_others(input_string):
     text = input_string
     
     text = text.replace(":", "ः")
-    text = text.replace("ळ्", "ड्")
-    text = text.replace("ळ", "ड")
+    # text = text.replace("ळ्", "ड्")
+    # text = text.replace("ळ", "ड")
     text = text.replace("ॐ", "ओम्")
     text = text.replace("ऽऽ", "ऽ")
 #    text = text.replace("़", "")

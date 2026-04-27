@@ -341,7 +341,11 @@ def byt5_mp_res(term_index, term_text):
     
     try:
         cleaned_text = clean_all(term_text)
-        res = run_byt5_text(byt5_engine, cleaned_text, "DN", "deva", "mp")
+        iti_entries_dict = get_iti_strings()
+        segmented_term, sandhied_term, hyphenated_term = replace_iti(cleaned_text, iti_entries_dict)
+        cleaned_input = segmented_term.split(" ")[0]
+
+        res = run_byt5_text(byt5_engine, cleaned_input, "DN", "deva", "mp")
         
         if res.get("status") == "success":
             res["term_index"] = term_index
