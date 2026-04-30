@@ -13,6 +13,9 @@ from scl_sandhi_interface.sandhi_words import sandhi_join
 from byt5_analyzer.byt5_analyzer import Byt5Analyzer
 from byt5_analyzer.cli import run_byt5_text
 
+from sanskrit_morph_converter.converter import RepresentationConverter
+converter = RepresentationConverter()
+
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -320,24 +323,78 @@ def scl_sent_sandhi(input_text):
 def byt5_wsmp_res(mantra_id, mantra_text):
     """ Get ByT5 segmentation and morphological analysis """
     if not mantra_id or not mantra_text:
-        return {"status": "error", "error": "Missing input_id or input_text"}, status_codes.get("error")
+        response_json = {
+            "status": "error",
+            "error": "Missing input_id or input_text"
+        }
+        return response_json, status_codes.get("error")
     
     try:
         cleaned_mantra = clean_all(mantra_text)
         res = run_byt5_text(byt5_engine, cleaned_mantra, "DN", "deva", "wsmp")
         
-        if res.get("status") == "success":
-            res["mantra_index"] = mantra_id
-            return res, status_codes.get("success")
+        status = res.get("status", "")
+        error = res.get("error", "Unknown error")
+
+        if status == "success":
+            raw_result = res.get("raw_result", "")
+            segments = raw_result.split(" ")
+            segments_analysis = []
+            sh_result = {}
+            segmentation = []
+            for sgmnt in segments:
+                cur_analysis = converter.convert('ByT5', 'SH', sgmnt)
+                if cur_analysis.get("segmentation"):
+                    segmentation.append(cur_analysis.get("segmentation")[0])
+                else:
+                    segmentation.append(sgmnt.split("_")[0])
+                if cur_analysis.get("morph"):
+                    segments_analysis += cur_analysis.get("morph", [])
+                        
+            segmentation_str = " ".join(segmentation)
             
-        return {"status": "failed", "error": res.get("error", "Unknown error")}, status_codes.get("failed")
+            segmentation_str = segmentation_str.replace("- ", "-")
+
+            sh_result["input"] = cleaned_mantra
+            sh_result["segmentation"] = [segmentation_str]
+            sh_result["status"] = status
+            sh_result["morph"] = segments_analysis
+            sh_result["source"] = "ByT5"
+
+            sh_result_str = json.dumps(sh_result, ensure_ascii=False)
+            response_json, _ = generate_results(mantra_id, cleaned_mantra, sh_result_str, "sent")
+            status_code = status_codes.get("success")
+        else:
+            response_json = {
+                "status": status,
+                "error" : error
+            }
+            status_code = status_codes.get(status, status_codes.get("failed"))
+            
     except Exception as e:
-        return {"status": "failed", "error": str(e)}, status_codes.get("failed")
+        response_json = {
+            "status": "failed",
+            "error": str(e)
+        }
+        status_code = status_codes.get("failed")
+    
+    return response_json, status_code
 
 def byt5_mp_res(term_index, term_text):
     """ Get ByT5 morphological analysis for a single term """
+    
+    response_json = {
+        "term_index": term_index,
+        "term_text": term_text,
+    }
+    
     if not term_index or not term_text:
-        return {"status": "error", "error": "Missing term_index or term_text"}, status_codes.get("error")
+        response_json.update({
+            "status" : "error",
+            "error": "Missing input_id or input_text",
+        })
+        status_code = status_codes.get("error")    
+        return response_json, status_code
     
     try:
         cleaned_text = clean_all(term_text)
@@ -345,32 +402,98 @@ def byt5_mp_res(term_index, term_text):
         segmented_term, sandhied_term, hyphenated_term = replace_iti(cleaned_text, iti_entries_dict)
         cleaned_input = segmented_term.split(" ")[0]
 
-        res = run_byt5_text(byt5_engine, cleaned_input, "DN", "deva", "mp")
+        res = run_byt5_text(byt5_engine, cleaned_input, "DN", "deva", "wsmp")
+
+        status = res.get("status", "")
+        error = res.get("error", "Unknown error")
         
-        if res.get("status") == "success":
-            res["term_index"] = term_index
-            return res, status_codes.get("success")
+        if status == "success":
+            raw_result = res.get("raw_result", "")
+
+            segments = raw_result.split(" ")
+            segments_analysis = []
+            sh_result = {}
+            segmentation = []
+            for sgmnt in segments:
+                cur_analysis = converter.convert('ByT5', 'SH', sgmnt)
+                if cur_analysis.get("segmentation"):
+                    segmentation.append(cur_analysis.get("segmentation")[0])
+                else:
+                    segmentation.append(sgmnt.split("_")[0])
+                if cur_analysis.get("morph"):
+                    segments_analysis += cur_analysis.get("morph", [])
+                        
+            segmentation_str = " ".join(segmentation)
             
-        return {"status": "failed", "error": res.get("error", "Unknown error")}, status_codes.get("failed")
+            segmentation_str = segmentation_str.replace("- ", "-")
+
+            sh_result["input"] = cleaned_text
+            sh_result["segmentation"] = [segmentation_str]
+            sh_result["status"] = status
+            sh_result["morph"] = segments_analysis
+            sh_result["source"] = "ByT5"
+
+            # Temporarily changing the source here because the converter 
+            # always keeps the source as "morph-mapper"
+            # NOTE: Sriram: Should analyse whether the sanskrit-morph-converter
+            # should keep the original source or provide morph-mapper as the source
+            
+            sh_result_str = json.dumps(sh_result, ensure_ascii=False)
+            sh_result_obj = generate_word_results(term_index, cleaned_text, sh_result_str, "word")
+            
+            response_json.update({
+                "status" : "success",
+                "term_json_new": sh_result_obj,
+            })
+            status_code = status_codes.get("success")
+        else:
+            response_json.update({
+                "status" : "failed",
+                "error" : error,
+                "term_json_new": [],
+            })
+            status_code = status_codes.get(res.get("status"), status_codes.get("failed"))
+            
     except Exception as e:
-        return {"status": "failed", "error": str(e)}, status_codes.get("failed")
+        response_json.update({
+            "status" : "failed",
+            "error": str(e),
+            "term_json_new": [],
+        })
+        status_code = status_codes.get("failed")
+    
+    return response_json, status_code
 
 def byt5_ws_res(input_text):
     """ Get ByT5 segmentation """
     if not input_text:
-        return {"status": "error", "error": "Missing 'input_text'"}, status_codes.get("error")
+        return {
+            "status" : "failure",
+            "error": "Missing input_text"
+        }, status_codes.get("error")
     
     try:
         cleaned_text = clean_all(input_text)
         
         res = run_byt5_text(byt5_engine, cleaned_text, "DN", "deva", "ws")
-        
-        if res.get("status") == "success":
-            return res, status_codes.get("success")
+
+        status = res.get("status", "")
+        error = res.get("error", "")
+        segmentation = res.get("raw_result", [])
+
+        if status == "success":
+            return {
+                "status": "success",
+                "segmentation": [ segmentation ]
+            }, status_codes.get("success")
             
-        return {"status": "failed", "error": res.get("error", "Unknown error")}, status_codes.get("failed")
+        # general failure
+        return {
+            "status": "failure",
+            "error": f"{status} - {error}"
+        }, status_codes.get(status, status_codes.get("failed"))
     except Exception as e:
-        return {"status": "failed", "error": str(e)}, status_codes.get("failed")
+        return {"status": "failure", "error": str(e)}, status_codes.get("failed")
 
 
 #-- App Routes --#
