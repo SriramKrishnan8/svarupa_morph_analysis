@@ -1,4 +1,5 @@
 import json
+import re
 
 pronoun_stems = [
     "त्वद्", "मद्", "अस्मद्", "युष्मद्", "तद्", "यद्", "एतद्", "किम्", "त्यद्", "इदम्", "अदस्", "एक", "द्वि", "भवतु",
@@ -121,6 +122,141 @@ class Morph:
         }
 
 
+def revise_grammar(raw_grammar):
+    """ """
+
+    revised_grammar = f"{raw_grammar}"
+    if "ind." not in revised_grammar:
+        revised_grammar = raw_grammar.replace("part.", "ind. part.")
+        revised_grammar = revised_grammar.replace("conj.", "ind. conj.")
+        revised_grammar = revised_grammar.replace("adv.", "ind. adv.")
+        revised_grammar = revised_grammar.replace("tasil", "ind. tasil")
+    
+    if "prev." not in revised_grammar:
+        revised_grammar = revised_grammar.replace("prep.", "prev.")
+    else:
+        revised_grammar = revised_grammar.replace("prep.", "")
+
+    # Handled kqw-avy
+    # revised_grammar = revised_grammar.replace("abs.", "abs1.")
+    if "abs" in revised_grammar:
+        if "ind." not in revised_grammar:
+            revised_grammar = revised_grammar + " ind."
+
+    # Handle past tense
+    if "pft./aor." in revised_grammar:
+        revised_grammar = revised_grammar.replace("pft./aor.", "past.")
+    
+    # Handle gaNa and aorist numbers
+    revised_grammar = revised_grammar.replace("[z]", "")
+    
+    gaNas = [
+        "[1]", "[2]", "[3]", "[4]", "[5]", "[6]", "[7]", "[8]", "[9]", "[10]",
+        "[vn.]", "[sn.]", "[kg.]", "[c]"
+    ]
+    for gaNa in gaNas:
+        if f"ppr. {gaNa} ac." in revised_grammar:
+            revised_grammar = revised_grammar.replace(f"ppr. {gaNa} ac.", "pd. Sawq_lat.")
+            if "ac." not in revised_grammar:
+                revised_grammar = revised_grammar + " ac."
+            if gaNa not in revised_grammar:
+                revised_grammar = revised_grammar + f" {gaNa}"
+        if f"ppr. {gaNa} md." in revised_grammar:
+            revised_grammar = revised_grammar.replace(f"ppr. {gaNa} md.", "pd. SAnac_lat_md.")
+            if "md." not in revised_grammar:
+                revised_grammar = revised_grammar + " md."
+            if gaNa not in revised_grammar:
+                revised_grammar = revised_grammar + f" {gaNa}"
+        if f"ppr. {gaNa} mo." in revised_grammar:
+            revised_grammar = revised_grammar.replace(f"ppr. {gaNa} mo.", "pd. SAnac_lat_md.")
+            if "mo." not in revised_grammar:
+                revised_grammar = revised_grammar + " mo."
+            if gaNa not in revised_grammar:
+                revised_grammar = revised_grammar + f" {gaNa}"
+    if "ppr. ps." in revised_grammar:
+        revised_grammar = revised_grammar.replace("ppr. ps.", "pd. SAnac_lat_ps.")
+        if "ps." not in revised_grammar:
+            revised_grammar = revised_grammar + " ps."
+    
+    revised_grammar = revised_grammar.replace("ppa.", "pd. kwavawu.")
+    revised_grammar = revised_grammar.replace("pp.", "pd. kwa.")
+    
+    if "ppf. ac." in revised_grammar:
+        revised_grammar = revised_grammar.replace("ppf. ac.", "pd. kvasu.")
+        if "ac." not in revised_grammar:
+            revised_grammar = revised_grammar + " ac."
+    if "ppf. md." in revised_grammar:
+        revised_grammar = revised_grammar.replace("ppf. ac.", "pd. kAnac.")
+        if "md." not in revised_grammar:
+            revised_grammar = revised_grammar + " md."
+    if "ppf. mo." in revised_grammar:
+        revised_grammar = revised_grammar.replace("ppf. ac.", "pd. kAnac.")
+        if "mo." not in revised_grammar:
+            revised_grammar = revised_grammar + " mo."
+    
+    if "pfu. ac." in revised_grammar:
+        revised_grammar = revised_grammar.replace("pfu. ac.", "pd. Sawq_lqt.")
+        if "ac." not in revised_grammar:
+            revised_grammar = revised_grammar + " ac."
+    if "pfu. md." in revised_grammar:
+        revised_grammar = revised_grammar.replace("pfu. ac.", "pd. SAnac_lqt.")
+        if "md." not in revised_grammar:
+            revised_grammar = revised_grammar + " md."
+    if "pfu. mo." in revised_grammar:
+        revised_grammar = revised_grammar.replace("pfu. ac.", "pd. SAnac_lqt.")
+        if "mo." not in revised_grammar:
+            revised_grammar = revised_grammar + " mo."
+    
+    revised_grammar = revised_grammar.replace("pfp. [1]", "pd. yaw.")
+    revised_grammar = revised_grammar.replace("pfp. [2]", "pd. anIyar.")
+    revised_grammar = revised_grammar.replace("pfp. [3]", "pd. wavya.")
+
+    revised_grammar = revised_grammar.replace("abs.", "pd. kwvA.")
+    revised_grammar = revised_grammar.replace("abs2.", "pd. lyap.")
+    revised_grammar = revised_grammar.replace("abs3.", "pd. Namul.")
+    revised_grammar = revised_grammar.replace("inf.", "pd. wumun.")
+
+    revised_grammar = revised_grammar.replace("pd. Kyun .", "pd. Kyun.")
+
+    revised_grammar = revised_grammar.replace("pd. ksen.", "pd. kasen.")
+    revised_grammar = revised_grammar.replace("pd. wavena.", "pd. waven.")
+    
+    # NOTE: Check if prec should be removed or not
+    revised_grammar = revised_grammar.replace("prec", "")
+
+    revised_grammar = revised_grammar.replace("fut. per.", "per. fut.")
+
+    revised_grammar = revised_grammar.replace("<empty>", "")
+
+    revised_grammar = revised_grammar.replace("pd. wavena.", "pd. waven.")
+    revised_grammar = revised_grammar.replace("pd. ksen.", "pd. kasen.")
+
+    pd_vedic_infinitives_wx = [
+        "se.", "sen.", "ase.", "asen.", "kse.", "kasen.", "aXyE.", "aXyEn.",
+        "kaXyE.", "kaXyEn.", "SaXyE.", "SaXyEn.", "wavE.", "wavef.", "waven."
+    ]
+    if any([item in revised_grammar for item in pd_vedic_infinitives_wx]):
+        if "ind." not in revised_grammar:
+            revised_grammar += " ind."
+    
+    revised_grammar = re.sub(r' +', ' ', revised_grammar)
+    
+    # Handle keys without dot
+    gms = revised_grammar.split(" ")
+    new_gms = []
+    for g in gms:
+        if "ac" == g:
+            new_gms.append("ac.")
+        elif "md" == g:
+            new_gms.append("md.")
+        else:
+            new_gms.append(g)
+    
+    revised_grammar = " ".join(new_gms)
+    
+    return revised_grammar
+
+
 def convertToBaseList(morphList):
     baseList = []
     for morph in morphList:
@@ -155,6 +291,7 @@ def convertToBaseList(morphList):
             grmr = " ".join(list(filter(None,grmr_lst)))
 #            inflectionalMorph = inflectionalMorph + " " + noun_type if noun_type else inflectionalMorph
 #            grmr = (derivationalMorph + " " + inflectionalMorph) if derivationalMorph else inflectionalMorph
+            grmr = revise_grammar(grmr)
             base.grammar = grmr
             baseList.append(base)
 

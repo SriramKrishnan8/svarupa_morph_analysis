@@ -2,7 +2,8 @@ import requests
 import json
 
 # url = "http://35.165.153.173:5000/ # OLD
-url_server = "http://44.243.100.111:5000/"
+# url_server = "http://44.243.100.111:5000/"
+url_server = "http://35.88.88.192:8000/"
 url_local = "http://127.0.0.1:5000/"
 
 # Word Segmentation and Morphological Parsing
@@ -30,8 +31,13 @@ params_mp = {
     # 'term_text' : 'त्रिऽसप्ताः',
     # 'term_text' : 'त्रिषप्ताः',
     # 'term_text' : 'रत्न॒ऽधात॑मम्',
+    # 'term_text' : 'अग्निम्',
     # 'term_text' : 'अग्निम्ंः',
     # 'term_text' : 'पुरःऽहितम्',
+    # 'term_text' : 'हितम्',
+    # 'term_text' : 'ब्रह्मऽलोकम्',
+    # 'term_text' : 'स॒न्ध्यायां᳚',
+    # 'term_text' : 'पठन्',
 }
 
 url_ws = "sh-ws"
@@ -195,15 +201,15 @@ def test_byt5_ws_local():
 
 
 def test_byt5_wsmp_server():
-    return url_local + url_byt5_wsmp, params_wsmp
+    return url_server + url_byt5_wsmp, params_wsmp
 
 
 def test_byt5_mp_server():
-    return url_local + url_byt5_mp, params_mp
+    return url_server + url_byt5_mp, params_mp
 
 
 def test_byt5_ws_server():
-    return url_local + url_byt5_ws, params_ws
+    return url_server + url_byt5_ws, params_ws
 
 
 url, params = test_wsmp_local()

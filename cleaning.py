@@ -3,7 +3,7 @@ import sys
 
 import re
 
-svaras = [ '\uA8E1', '\uA8E2', '\uA8E3', '\uA8E4', '\uA8E5', '\uA8E6', '\uA8E7', '\uA8E8', '\uA8E9', '\uA8E0', '\uA8EA', '\uA8EB', '\uA8EC', '\uA8EE', '\uA8EF', '\u030D', '\u0951', '\u0952', '\u0953', '\u0954', '\u0945' ]
+svaras = [ '\uA8E1', '\uA8E2', '\uA8E3', '\uA8E4', '\uA8E5', '\uA8E6', '\uA8E7', '\uA8E8', '\uA8E9', '\uA8E0', '\uA8EA', '\uA8EB', '\uA8EC', '\uA8EE', '\uA8EF', '\u030D', '\u0951', '\u0952', '\u0953', '\u0954', '\u0945', '\u1CDA' ]
 #special_characters = [ '\uf15c', '\uf193', '\uf130', '\uf1a3', '\uf1a2', '\uf195', '\uf185', '\u200d', '\u200c', '\u1CD6', '\u1CD5', '\u1CE1', '\u030E', '\u035B', '\u0324', '\u1CB5', '\u0331', '\u1CB6', '\u032B', '\u0308', '\u030D', '\u0942', '\uF512', '\uF693', '\uF576', '\uF11E', '\u1CD1', '\u093C', '\uF697', '\uF6AA', '\uF692' ]
 special_characters = [ '\uf15c', '\uf193', '\uf130', '\uf1a3', '\uf1a2', '\uf195', '\uf185', '\u200d', '\u200c', '\u1CD6', '\u1CD5', '\u1CE1', '\u030E', '\u035B', '\u0324', '\u1CB5', '\u0331', '\u1CB6', '\u032B', '\u0308', '\u030D', '\uF512', '\uF693', '\uF576', '\uF11E', '\u1CD1', '\u093C', '\uF697', '\uF6AA', '\uF692' ]
 
